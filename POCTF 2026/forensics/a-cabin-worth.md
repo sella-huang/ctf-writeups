@@ -2,33 +2,33 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | forensics |
-| **Solves** | 434 |
+| **Bagian** | wave 2 |
+| **Kategori** | forensics |
+| **Jumlah Solve** | 434 |
 
-## Overview
+## Ikhtisar
 
-A Joplin 2.14.20 Linux profile was imaged while the application was running. The main database is one 4 KiB page; the 156,592-byte `database.sqlite-wal` holds 38 frames of 4 KiB pages. The visible `notes` table contains four live notes and the `deleted_items` table contains one row, but the deleted note is no longer in the current notes page. The WAL still holds the pre-delete page image.
+Profil Linux Joplin 2.14.20 dicitrakan saat aplikasi sedang berjalan. Basis data utama adalah satu halaman 4 KiB; `database.sqlite-wal` 156.592 byte menampung 38 frame dari 4 halaman KiB. Tabel `notes` yang terlihat berisi empat catatan langsung dan tabel `deleted_items` berisi satu baris, namun catatan yang dihapus tidak lagi ada di halaman catatan saat ini. WAL masih menyimpan gambar halaman yang telah dihapus sebelumnya.
 
-## Solve
+## Penyelesaian
 
-The WAL header at offset 0 is:
+Header WAL pada offset 0 adalah:
 
 ```text
 magic 0x377f0682  version 3007000  page_size 4096
 salt1 0xdb84c003  salt2 0x87bc0766
 ```
 
-Each frame is a 24-byte header followed by 4096 bytes of page data. The frame header is six big-endian uint32 values: page number, database size after commit (zero for non-commit frames), salt-1, salt-2, checksum-1, checksum-2. All 38 frames pass the WAL checksum. Frame 38 is the final commit and sets the database size to 16 pages.
+Setiap frame adalah header 24-byte diikuti oleh 4096 byte data halaman. Header bingkai terdiri dari enam nilai uint32 big-endian: nomor halaman, ukuran basis data setelah penerapan (nol untuk bingkai non-komit), garam-1, garam-2, checksum-1, checksum-2. Semua 38 frame melewati checksum WAL. Frame 38 adalah komit terakhir dan menyetel ukuran database menjadi 16 halaman.
 
-After applying the WAL, the current `notes` table is page 4 with four rows. The `deleted_items` table is page 12:
+Setelah menerapkan WAL, tabel `notes` saat ini adalah halaman 4 dengan empat baris. Tabel `deleted_items` ada di halaman 12:
 
 ```text
 rowid 1: item_type=1  item_id=4b7c9e1f3a5b7c9e1f3a5b7c9e1f3a5b
          deleted_time=1751326272000 (2025-06-30 23:31:12 UTC)  sync_target=0
 ```
 
-`sqlite_sequence` confirms one deletion. The deleted item ID is absent from the current notes page, but the WAL contains the last pre-delete version of page 4: frame 25. Frame 35 is the post-delete page 4. Parsing frame 25 as a table-leaf page yields five notes; the fifth is:
+`sqlite_sequence` mengonfirmasi satu penghapusan. ID item yang dihapus tidak ada di halaman catatan saat ini, tetapi WAL berisi versi halaman 4 yang terakhir dihapus sebelumnya: bingkai 25. Bingkai 35 adalah halaman pasca-penghapusan 4. Mengurai bingkai 25 sebagai halaman daun tabel menghasilkan lima catatan; yang kelima adalah:
 
 ```text
 id: 4b7c9e1f3a5b7c9e1f3a5b7c9e1f3a5b
@@ -39,7 +39,7 @@ encryption_cipher_text: 1772 base64 characters
 encryption_applied: 1
 ```
 
-The `settings` table supplies the encryption parameters:
+Tabel `settings` menyediakan parameter enkripsi:
 
 ```text
 note.encryption.algorithm      AES-256-GCM
@@ -49,11 +49,11 @@ note.encryption.blob_layout    salt(16) || nonce(12) || ciphertext || tag(16), b
 note.password_hint             my good widdle boy!
 ```
 
-The hint points at Horatio, the dog named in the live `shopping` note. The password is `horatio`.
+Petunjuknya menunjuk pada Horatio, anjing yang disebutkan dalam catatan live `shopping`. Kata sandinya adalah `horatio`.
 
-The note blob decodes to a 16-byte salt, a 12-byte nonce, 1285 bytes of ciphertext, and a 16-byte GCM tag. Deriving a 32-byte key with PBKDF2-HMAC-SHA256 over `horatio` and the salt, then decrypting with AES-256-GCM, reveals the deleted note body. The plaintext contains the working flag.
+Gumpalan catatan diterjemahkan menjadi garam 16-byte, nonce 12-byte, teks sandi 1.285 byte, dan tag GCM 16-byte. Mendapatkan kunci 32-byte dengan PBKDF2-HMAC-SHA256 melalui `horatio` dan garam, kemudian mendekripsi dengan AES-256-GCM, mengungkapkan isi catatan yang dihapus. Teks biasa berisi tanda kerja.
 
-A minimal extractor/decryptor:
+Ekstraktor/dekripsi minimal:
 
 ```python
 import base64, hashlib, struct
@@ -122,4 +122,4 @@ for i in range(nc):
         print(AESGCM(key).decrypt(nonce, blob[28:-16] + tag, None).decode())
 ```
 
-The recovered flag is `POCTF{████…}`.
+Flag yang dipulihkan adalah `POCTF{████…}`.

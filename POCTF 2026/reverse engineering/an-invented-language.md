@@ -2,18 +2,18 @@
 
 | | |
 |---|---|
-| **Section** | wave 4 |
-| **Category** | reverse engineering |
-| **Solves** | 256 |
+| **Bagian** | wave 4 |
+| **Kategori** | reverse engineering |
+| **Jumlah Solve** | 256 |
 
-## Overview
+## Ikhtisar
 
-The archive contains `prog.bin` for an undocumented stack-based VM and `vm.c`, its reference interpreter.
+Arsip berisi `prog.bin` untuk VM berbasis tumpukan yang tidak terdokumentasi dan `vm.c`, penerjemah referensinya.
 
-## Solve
+## Penyelesaian
 
-`vm.c` defines the complete instruction set: `0x01` push imm32, `0x02` pop, `0x03` dup, `0x04` swap, `0x05` add, `0x06` sub, `0x07` xor, `0x08` and, `0x09` rotate byte, `0x0a` load, `0x0b` store, `0x0c` print, `0x0d` halt.
+`vm.c` mendefinisikan set instruksi lengkap: `0x01` push imm32, `0x02` pop, `0x03` dup, `0x04` swap, `0x05` add, `0x06` sub, `0x07` xor, `0x08` dan, `0x09` memutar byte, memuat `0x0a`, menyimpan `0x0b`, mencetak `0x0c`, `0x0d` berhenti.
 
-The reference VM produces no output. A Python interpreter for the same ISA shows that the program pushes immediate pairs, XORs them, and stores 59 bytes into `m[0..58]`; it never reaches a print instruction. Dumping the final memory reveals the flag.
+VM referensi tidak menghasilkan keluaran. Penerjemah Python untuk ISA yang sama menunjukkan bahwa program mendorong pasangan langsung, meng-XOR-nya, dan menyimpan 59 byte ke dalam `m[0..58]`; itu tidak pernah mencapai instruksi cetak. Membuang memori terakhir akan mengungkapkan flag-nya.
 
-The submitted flag was POCTF{123.1814.████████████████.████████████████} and it was accepted.
+Flag yang dikirimkan adalah POCTF{123.1814.████████████████.████████████████} dan diterima.

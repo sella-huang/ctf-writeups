@@ -2,17 +2,17 @@
 
 | | |
 |---|---|
-| **Section** | wave 3 |
-| **Category** | crypto |
-| **Solves** | 296 |
+| **Bagian** | wave 3 |
+| **Kategori** | crypto |
+| **Jumlah Solve** | 296 |
 
-## Overview
+## Ringkasan
 
-The challenge exposes an encrypted medical record and a compliance endpoint that only reports whether a candidate record has valid PKCS#7 padding. That is a padding oracle. The record is AES-CBC, so the oracle is enough to recover the plaintext block by block without the key.
+Tantangan ini menampilkan rekam medis terenkripsi dan titik akhir jaminan yang hanya melaporkan apakah rekam medis kandidat memiliki padding PKCS#7 yang valid. Itu adalah padding oracle. Catatannya adalah AES-CBC, jadi Oracle cukup untuk memulihkan blok teks biasa demi blok tanpa kunci.
 
-## Solve
+## Penyelesaian
 
-The page provides a per-team Bearer token, a hex-encoded record, and the endpoint:
+Halaman ini menyediakan token Pembawa per tim, catatan berkode hex, dan titik akhir:
 
 ```text
 POST https://pointeroverflowctf.com/challenges/consulting-room/oracle
@@ -22,9 +22,9 @@ Content-Type: application/json
 {"record": "<hex>"}
 ```
 
-A valid padding returns `{"padding":"valid"}`; an invalid one returns HTTP 400 with `{"padding":"invalid"}`. The record is five AES blocks: one IV and four ciphertext blocks.
+Padding yang valid mengembalikan `{"padding":"valid"}`; yang tidak valid mengembalikan HTTP 400 dengan `{"padding":"invalid"}`. Rekornya adalah lima blok AES: satu blok IV dan empat blok ciphertext.
 
-For a ciphertext block `C_i`, the plaintext is `P_i = D(C_i) XOR C_{i-1}`. The oracle tests the padding of `D(C_i) XOR X`, where `X` is the block we control. Decrypt the last byte first. For padding value `p`, set the already-known suffix to `I_j XOR p`, where `I = D(C_i)`, and try all 256 values for the current byte. When the oracle accepts, the candidate is `I_pos XOR p`. For `p = 1`, a false positive is possible when the real plaintext already ends in more than one padding byte, so flip an earlier byte and require the oracle to reject the modified record.
+Untuk blok ciphertext `C_i`, plaintextnya adalah `P_i = D(C_i) XOR C_{i-1}`. Oracle menguji padding `D(C_i) XOR X`, di mana `X` adalah blok yang kita kendalikan. Dekripsi byte terakhir terlebih dahulu. Untuk nilai padding `p`, atur akhiran yang sudah diketahui ke `I_j XOR p`, di mana `I = D(C_i)`, dan coba semua 256 nilai untuk byte saat ini. Ketika oracle menerima, kandidatnya adalah `I_pos XOR p`. Untuk `p = 1`, positif palsu mungkin terjadi ketika teks biasa sebenarnya sudah berakhir di lebih dari satu byte padding, jadi balikkan byte sebelumnya dan minta Oracle untuk menolak catatan yang dimodifikasi.
 
 ```python
 import json, urllib.request
@@ -65,10 +65,10 @@ def decrypt_block(prev, block):
     return bytes(inter[i] ^ prev[i] for i in range(16))
 ```
 
-Run it for blocks 1 through 4, concatenate, and strip the PKCS#7 padding. The recovered plaintext is 64 bytes: the 58-byte flag followed by six `0x06` padding bytes.
+Jalankan untuk blok 1 hingga 4, gabungkan, dan hapus padding PKCS#7. Teks biasa yang berukuran 64 byte: flag 58 byte diikuti oleh enam byte padding `0x06`.
 
 ```text
 ████████████████
 ```
 
-The recovered record is the flag ████████████████.
+Catatan yang diumumkan adalah flag ████████████████.

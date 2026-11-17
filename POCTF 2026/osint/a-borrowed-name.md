@@ -2,26 +2,26 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | osint |
-| **Solves** | 467 |
+| **Bagian** | wave 2 |
+| **Kategori** | osint |
+| **Jumlah Solve** | 467 |
 
-## Overview
+## Ikhtisar
 
-The brief points at Frank Abagnale Jr. — spelled "Abignale", which resolves anyway — the con man of *Catch Me If You Can*, now a consultant and motivational speaker. It then describes the mechanics of the lie it wants unpicked: his "Lifetime Achievement Award" from the "FBI" actually comes from a different organisation, that organisation is only one chapter of itself, and his own company is listed as a sponsor of the award.
+Poin singkat tentang Frank Abagnale Jr. — dieja "Abignale", yang tetap terselesaikan — penipu *Catch Me If You Can*, sekarang menjadi konsultan dan pembicara motivasi. Ia kemudian menggambarkan mekanisme kebohongan yang ingin disingkirkan: "Penghargaan Prestasi Seumur Hidup" miliknya dari "FBI" sebenarnya berasal dari organisasi yang berbeda, organisasi tersebut hanya merupakan satu cabang dari dirinya sendiri, dan perusahaannya sendiri terdaftar sebagai sponsor penghargaan tersebut.
 
-So the question is not identification. It is provenance: an award, repeated in dozens of biographies, whose real issuer sits one level below the institution it is credited to.
+Jadi pertanyaannya bukanlah identifikasi. Ini adalah asal usulnya: sebuah penghargaan, yang diulangi dalam lusinan biografi, yang penerbit aslinya berada satu tingkat di bawah institusi tempat penghargaan tersebut diberikan.
 
-## Solve
+## Penyelesaian
 
-The claim has no primary source. Speaker-bureau and conference biographies repeat it almost verbatim — "the FBI's Lifetime Achievement Award" — with no date, no ceremony, no citation and no link. Different pages, identical sentence: that is copying, not reporting.
+Klaim tersebut tidak memiliki sumber utama. Biografi pembicara dan biografi konferensi mengulanginya hampir kata demi kata - "Penghargaan Prestasi Seumur Hidup FBI" - tanpa tanggal, tanpa upacara, tanpa kutipan, dan tanpa tautan. Halaman berbeda, kalimat identik: yaitu menyalin, bukan melaporkan.
 
-The alleged issuer does not issue it. Searching `fbi.gov` and Department of Justice press releases for that award returns nothing. The FBI's public civilian honours are named things — the Director's Community Leadership Award, the Citizens Academy — and there is no bureau-wide "Lifetime Achievement Award" handed to outside consultants. The negative result is the finding: the award exists, the attribution does not.
+Terduga penerbit tidak menerbitkannya. Menelusuri siaran pers `fbi.gov` dan Departemen Kehakiman untuk penghargaan tersebut tidak menghasilkan apa-apa. Penghargaan sipil yang diberikan FBI adalah sesuatu yang bersifat nominal – Penghargaan Kepemimpinan Komunitas Direktur, Akademi Warga Negara – dan tidak ada “Penghargaan Prestasi Seumur Hidup” yang diberikan kepada konsultan luar di seluruh biro. Hasil negatifnya adalah temuan: penghargaan itu ada, atribusinya tidak.
 
-The real issuer sits one level down. InfraGard is a public-private partnership with the FBI, run as a nonprofit and organised into local chapters (members alliances). An award given by a chapter of an FBI-affiliated organisation survives two rewrites as "an award from the FBI". That is why the award cannot be found on an FBI page: it was never an FBI page.
+Emiten sebenarnya duduk satu tingkat di bawah. InfraGard adalah kemitraan publik-swasta dengan FBI, dijalankan sebagai organisasi nirlaba dan diorganisasikan ke dalam cabang lokal (aliansi anggota). Penghargaan yang diberikan oleh salah satu cabang organisasi yang berafiliasi dengan FBI tetap bertahan dalam dua kali penulisan ulang sebagai "penghargaan dari FBI". Itulah sebabnya penghargaan tersebut tidak dapat ditemukan di halaman FBI: tidak pernah ada di halaman FBI.
 
-The chapter is pinned by the sponsor list. Chapters publish their events and their sponsors, and the chapter that gave the award lists Abagnale's company among them. That chapter is Charlotte.
+Bab ini disematkan oleh daftar sponsor. Cabang-cabang mempublikasikan acara dan sponsornya, dan bab yang memberikan penghargaan mencantumkan perusahaan Abagnale di antara mereka. Bab itu adalah Charlotte.
 
-The pattern generalises: an award from a local chapter of an affiliated nonprofit, repeated in enough biographies, becomes an institutional award and then a fact. Nobody had to lie — every individual sentence can be defended, the lie is in the aggregation.
+Polanya bersifat umum: penghargaan dari cabang lokal organisasi nirlaba yang terafiliasi, yang diulangi dalam cukup banyak biografi, menjadi penghargaan institusional dan kemudian menjadi fakta. Tidak ada yang harus berbohong - setiap kalimat dapat dipertahankan, kebohongan ada dalam agregasi.
 
-The group is **InfraGard**, and the chapter is **Charlotte**.
+Grupnya adalah **InfraGard**, dan chapternya adalah **Charlotte**.

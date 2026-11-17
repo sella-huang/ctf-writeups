@@ -2,31 +2,31 @@
 
 | | |
 |---|---|
-| **Section** | wave 1 |
-| **Category** | steganography |
-| **Solves** | 583 |
+| **Bagian** | wave 1 |
+| **Kategori** | steganography |
+| **Jumlah Solve** | 583 |
 
-## Overview
+## Ikhtisar
 
-The challenge ships a single script, `invisible_text.py`, and a paragraph about how humans survive by communicating — crying, language, Morse, ASL. The last sentence is the one that matters: some messages are not broadcast for the world to see, and "I'm confident you'll **see** what I'm communicating if you **look** in the right place."
+Tantangan ini mengirimkan satu skrip, `invisible_text.py`, dan sebuah paragraf tentang bagaimana manusia bertahan hidup dengan berkomunikasi — menangis, bahasa, Morse, ASL. Kalimat terakhir adalah kalimat yang penting: beberapa pesan tidak disiarkan agar dapat dilihat oleh dunia, dan "Saya yakin Anda akan **melihat** apa yang saya komunikasikan jika Anda **melihat** di tempat yang tepat."
 
-The script reassembles a list of base64 chunks, inflates them with zlib and prints the result, which its docstring calls a diary entry recovered in a custom "DR3 archive format". What actually comes out is a block of Unicode Braille, roughly 50 cells wide and 30-odd rows tall.
+Skrip menyusun kembali daftar potongan base64, mengembangkannya dengan zlib dan mencetak hasilnya, yang oleh dokumennya disebut sebagai entri buku harian yang dipulihkan dalam "format arsip DR3" khusus. Apa yang sebenarnya keluar adalah blok Unicode Braille, lebarnya kira-kira 50 sel dan tinggi 30 baris ganjil.
 
-Braille is not a font, it is a raster: each glyph is a 2×4 dot matrix. So the block is a bitmap a little over a hundred pixels wide, and rendered it is a dithered image of the **default profile silhouette** — the anonymous head-and-shoulders avatar that social networks show when nobody has uploaded a picture.
+Braille bukanlah font, melainkan raster: setiap mesin terbang adalah matriks titik 2x4. Jadi blok tersebut berupa bitmap yang lebarnya sedikit di atas seratus piksel, dan dirender menjadi gambar samar dari **siluet profil default** — avatar kepala-dan-bahu anonim yang ditampilkan jejaring sosial ketika tidak ada orang yang mengunggah gambar.
 
-That is the joke of the visible layer. The diary reader promises a diary and delivers the visual equivalent of "no image here": a placeholder for someone who has nothing to show. The output was never the message. The flag is in the file that produces it.
+Itu adalah lelucon dari lapisan yang terlihat. Pembaca buku harian menjanjikan buku harian dan memberikan padanan visual dari "tidak ada gambar di sini": pengganti untuk seseorang yang tidak memiliki apa pun untuk ditampilkan. Outputnya tidak pernah menjadi pesan. Flag-nya ada di file yang memproduksinya.
 
-## Solve
+## Penyelesaian
 
-`cat` shows a perfectly ordinary Python file. Look at what happens at the end of each line instead:
+`cat` menampilkan file Python biasa. Lihatlah apa yang terjadi di akhir setiap baris:
 
 ```bash
 grep -nP '[ \t]+$' invisible_text.py | head
 ```
 
-Almost every line carries whitespace between the end of its content and the newline, and the pattern alternates: a long run of spaces and tabs, then a line with a single tab, then a long run again. The long runs are carriers; the single tabs are camouflage, enough noise that the file looks consistently sloppy rather than deliberately written.
+Hampir setiap baris memiliki spasi antara bagian akhir konten dan baris baru, dan polanya bergantian: spasi dan tab yang panjang, lalu garis dengan satu tab, lalu jangka panjang lagi. Jangka panjang adalah pembawa; tab tunggalnya bersifat kamuflase, cukup berisik sehingga file selalu terlihat ceroboh dan tidak sengaja ditulis.
 
-This is classic whitespace steganography. Space and tab are invisible in a terminal, survive copy-paste and most editor round-trips, and each one holds a bit: space is `0`, tab is `1`. One carrier run is one byte, padded on the left with spaces, which is why the runs are wider than the eight bits the character actually needs.
+Ini adalah steganografi spasi putih klasik. Spasi dan tab tidak terlihat di terminal, tahan terhadap salin-tempel dan sebagian besar perjalanan bolak-balik editor, dan masing-masing menampung sedikit: spasi adalah `0`, tab adalah `1`. Satu proses pembawa adalah satu byte, diisi di sebelah kiri dengan spasi, itulah sebabnya proses tersebut lebih lebar dari delapan bit yang sebenarnya dibutuhkan karakter.
 
 ```python
 from pathlib import Path
@@ -44,10 +44,8 @@ for line in data.splitlines():
 print("".join(out))
 ```
 
-The threshold only skips the lines that are too short to hold a padded byte; it is not part of the encoding. The output opens with `POCTF{`, which is the check that the bit order and the padding side are both right:
+Ambang batas hanya melewatkan baris yang terlalu pendek untuk menampung byte empuk; itu bukan bagian dari pengkodean. Outputnya terbuka dengan `POCTF{`, yang merupakan pemeriksaan apakah urutan bit dan sisi padding sudah benar:
 
 ```
 POCTF{████████████████}
-```
-
-The title is the whole hint, and it is unusually literal. The readable text of the program is the decoy; the program's *bytes* are the message. Two practical consequences: the file has to be read as bytes, because any decode/encode round-trip can normalise or drop the runs, and an editor configured to trim trailing whitespace on save destroys the payload without warning.
+```Judulnya adalah keseluruhan petunjuknya, dan sangat literal. Teks program yang dapat dibaca adalah umpan; *byte* program adalah pesannya. Dua konsekuensi praktis: file harus dibaca sebagai byte, karena setiap perjalanan bolak-balik decode/encode dapat menormalkan atau menghentikan proses, dan editor yang dikonfigurasi untuk memangkas spasi di akhir penyimpanan akan menghancurkan payload tanpa peringatan.

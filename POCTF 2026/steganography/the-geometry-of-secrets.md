@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| **Section** | wave 7 |
-| **Category** | steganography |
-| **Solves** | 109 |
+| **Bagian** | wave 7 |
+| **Kategori** | steganography |
+| **Jumlah Solve** | 109 |
 
-## Overview
+## Ikhtisar
 
-The artifact is a 35-line Wavefront OBJ. It declares 24 vertices and 3 faces, with the header `# Marchetti Modeling Suite — export`, `# Geometry, decorative. Provenance uncertain.`, and `# Model: piece-1814`. A comment `# reference geometry follows` separates the first 16 vertices from the last 8. The last 8 are a cube at `±2.0`, and the three faces reference only those vertices (`17`–`24`):
+Artefaknya adalah OBJ Wavefront 35 baris. Ini mendeklarasikan 24 simpul dan 3 sisi, dengan header `# Marchetti Modeling Suite — export`, `# Geometry, decorative. Provenance uncertain.`, dan `# Model: piece-1814`. Komentar `# reference geometry follows` memisahkan 16 simpul pertama dari 8 simpul terakhir. 8 simpul terakhir adalah sebuah kubus di `±2.0`, dan ketiga permukaan tersebut hanya merujuk pada simpul-simpul tersebut (`17`–`24`):
 
 ```
 f 17 18 19 20
@@ -16,13 +16,13 @@ f 21 22 23 24
 f 17 18 22 21
 ```
 
-The first 16 vertices are referenced by no face. In a normal mesh every vertex is used; here the first 16 are orphaned. That is the first clue: the geometry is a carrier, and the unused vertices are the payload.
+16 simpul pertama direferensikan tanpa wajah. Dalam mesh normal, setiap titik digunakan; di sini 16 orang pertama menjadi yatim piatu. Itu adalah petunjuk pertama: geometri adalah pembawa, dan simpul yang tidak digunakan adalah muatannya.
 
-The second clue is the coordinates of those 16 vertices. Every one has a uniform magnitude: either all three coordinates are `±0.5`, or all three are `±1.0`. So each vertex is a cube corner (three sign bits) plus a scale bit (inner shell `0.5` vs outer shell `1.0`). Three bits plus one bit is a nibble, and 16 vertices give exactly 16 hex digits — the length of the team nonce. The reference cube at `±2.0` is a third, larger shell: it makes the file look like a decorative model, but it is not part of the message.
+Petunjuk kedua adalah koordinat 16 simpul tersebut. Setiap koordinat mempunyai magnitudo yang seragam: ketiga koordinatnya adalah `±0.5`, atau ketiganya adalah `±1.0`. Jadi setiap titik adalah sudut kubus (tiga bit tanda) ditambah bit skala (kulit dalam `0.5` vs kulit luar `1.0`). Tiga bit ditambah satu bit adalah satu gigitan, dan 16 simpul menghasilkan tepat 16 digit hex — panjang tim nonce. Kubus referensi di `±2.0` adalah shell ketiga yang lebih besar: membuat file tampak seperti model dekoratif, namun bukan bagian dari pesan.
 
-## Solve
+## Penyelesaian
 
-The file inventory confirms the split:
+Inventaris file mengonfirmasi pemisahan:
 
 ```bash
 grep -c '^v ' piece-1814.obj   # 24
@@ -30,7 +30,7 @@ grep -c '^f ' piece-1814.obj   # 3
 grep -n '^#' piece-1814.obj    # comments, including "reference geometry follows"
 ```
 
-The first 16 vertices are:
+16 simpul pertama adalah:
 
 ```
 v -0.5000 -0.5000 -0.5000
@@ -51,7 +51,7 @@ v -1.0000 -1.0000  1.0000
 v  0.5000  0.5000  0.5000
 ```
 
-The decode is one nibble per vertex, with the bits in the order the coordinates appear: sign of `x`, sign of `y`, sign of `z`, then the scale bit. Positive is `1`, negative is `0`; `1.0` is `1`, `0.5` is `0`. The nibble is:
+Dekodenya adalah satu gigitan per titik, dengan bit-bit sesuai urutan koordinat yang muncul: tanda `x`, tanda `y`, tanda `z`, lalu bit skala. Positif adalah `1`, negatif adalah `0`; `1.0` adalah `1`, `0.5` adalah `0`. Gigitannya adalah:
 
 ```
 nibble = (x > 0) << 3 | (y > 0) << 2 | (z > 0) << 1 | (abs(x) == 1.0)
@@ -76,19 +76,19 @@ nibble = (x > 0) << 3 | (y > 0) << 2 | (z > 0) << 1 | (abs(x) == 1.0)
 | 15 | -1.0 -1.0 1.0 | 001 | 1.0 | 3 |
 | 16 | 0.5 0.5 0.5 | 111 | 0.5 | e |
 
-Reading the nibbles in vertex order gives:
+Membaca camilan dalam urutan puncak menghasilkan:
 
 ```
 0 3 9 8 5 8 9 9 e 7 8 7 5 0 3 e
 ```
 
-which is the nonce:
+yang merupakan nonce:
 
 ```
 ████████████████
 ```
 
-The whole extraction is small:
+Seluruh ekstraksinya kecil:
 
 ```python
 verts = []
@@ -104,13 +104,13 @@ for x, y, z in verts[:16]:
 print(nonce)
 ```
 
-Output:
+Keluaran:
 
 ```
 ████████████████
 ```
 
-Submission is the standard JSON form:
+Pengiriman adalah formulir JSON standar:
 
 ```bash
 curl -sS -X POST 'https://pointeroverflowctf.com/challenges/the-geometry-of-secrets/submit' \
@@ -119,16 +119,14 @@ curl -sS -X POST 'https://pointeroverflowctf.com/challenges/the-geometry-of-secr
   --data '{"flag":"████████████████"}'
 ```
 
-and the response is:
+dan jawabannya adalah:
 
 ```json
 {"correct":true,"message":"Correct."}
-```
+```Kubus referensi adalah jalan buntu utama. Delapan simpul dan tiga sisinya mengundang dua pembacaan yang salah. Pertama, memperlakukan 16 simpul pertama sebagai bitstream mentah — 48 bit tanda diikuti oleh 16 bit skala — menghasilkan `064524ee340f6b5a` (atau `6b5a064524ee340f` dengan aliran terbalik). Ini adalah 16 karakter hex, jadi kelihatannya masuk akal, tapi ditolak. Kedua, menggunakan urutan titik kubus referensi sebagai buku kode untuk delapan sudut menghasilkan `c5febeff03e3bc50` (indeks sudut ditambah skala sebagai bit rendah) atau `6af7d7ff0979d6a0` (skala sebagai bit tinggi); keduanya ditolak. Kubus referensi persis seperti yang dikatakan dalam komentarnya: geometri referensi, bukan kunci. Pesannya ada di simpul yatim piatu, dan pengkodeannya adalah per-simpul, bukan aliran per-sumbu.
 
-The reference cube is the main dead end. Its eight vertices and three faces invite two wrong readings. First, treating the first 16 vertices as a raw bitstream — 48 sign bits followed by 16 scale bits — gives `064524ee340f6b5a` (or `6b5a064524ee340f` with the streams reversed). It is 16 hex characters, so it looks plausible, but it is rejected. Second, using the reference cube's vertex order as a codebook for the eight corners gives `c5febeff03e3bc50` (corner index plus scale as the low bit) or `6af7d7ff0979d6a0` (scale as the high bit); both are rejected. The reference cube is exactly what its comment says: reference geometry, not a key. The message is in the orphan vertices, and the encoding is per-vertex, not per-axis-stream.
+Umpan lainnya adalah komentar dan mesh. `strings` di OBJ hanya mengembalikan header Marchetti dan baris `reference geometry follows`; tidak ada fragmen teks. Ketiga sisi tersebut hanya membentuk sebagian kubus dan tidak mengkodekan apa pun. Kubus `±2.0` secara visual merupakan cangkang ketiga, tetapi muatannya adalah dua cangkang bagian dalam di `±0.5` dan `±1.0`; memasukkan simpul referensi dalam dekode akan menggeser string dan gagal.
 
-The other decoys are the comments and the mesh. `strings` on the OBJ returns only the Marchetti header and the `reference geometry follows` line; there is no text fragment. The three faces form only part of a cube and encode nothing. The `±2.0` cube is visually a third shell, but the payload is the two inner shells at `±0.5` and `±1.0`; including the reference vertices in the decode shifts the string and fails.
+Konstruksinya konsisten: tiga bit tanda memilih salah satu dari delapan sudut kubus, bit skala memilih cangkang, dan nilai empat bit yang dihasilkan adalah digit hex. Enam belas simpul mengisi enam belas digit hex, cocok dengan enam belas karakter nonce. Ungkapan "presisi di setiap dimensi" adalah petunjuk untuk bit keempat: besarnya adalah dimensi ekstra yang mengubah sudut 3D menjadi gigitan.
 
-The construction is consistent: three sign bits choose one of the eight corners of a cube, the scale bit chooses the shell, and the resulting four-bit value is a hex digit. Sixteen vertices fill sixteen hex digits, matching the sixteen-character nonce. The phrase "precision in every dimension" is the hint for the fourth bit: the magnitude is the extra dimension that turns a 3D corner into a nibble.
-
-The geometry decodes to `████████████████`, and the marker is `POCTF{████…}`.
+Geometri diterjemahkan menjadi `████████████████`, dan penandanya adalah `POCTF{████…}`.

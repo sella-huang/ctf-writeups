@@ -2,35 +2,35 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | crypto |
-| **Solves** | 168 |
+| **Bagian** | wave 5 |
+| **Kategori** | crypto |
+| **Jumlah Solve** | 168 |
 
-## Overview
+## Ringkasanan
 
-The artifact is a one-track MIDI file, `score.mid`, with one note per character. The notes are not random music: their MIDI numbers are ASCII codes shifted by a fixed amount. The challenge gives `POCTF` as known plaintext, which is enough to recover the substitution.
+Artefaknya adalah file MIDI satu jalur, `score.mid`, dengan satu nada per karakter. Not-not tersebut bukanlah musik acak: nomor MIDI-nya adalah kode ASCII yang digeser dengan jumlah yang tetap. Tantangannya memberikan `POCTF` sebagai teks biasa, yang cukup untuk memulihkan substitusi.
 
-## Solve
+## Penyelesaian
 
-The track contains 58 note-on events, each 480 ticks long. Reading the note numbers in order gives:
+Lagu ini berisi 58 peristiwa catatan, masing-masing sepanjang 480 tick. Membaca nomor not secara berurutan memberikan:
 
 ```text
 80 79 67 84 70 64 60 57 63 54 61 54 57 63 ...
 ```
 
-As ASCII, the first six are `POCTF@`. Subtracting 5 from every note gives the ciphertext:
+Sebagai ASCII, enam yang pertama adalah `POCTF@`. Mengurangi 5 dari setiap not menghasilkan ciphertext:
 
 ```text
 KJ>OA;74:1814:THCUU@FOPK2R4NEO:2GDJS3B3TS=6SDS=G772EGO2EDV
 ```
 
-The known plaintext `POCTF{` matches `KJ>OA;` under a simple substitution:
+Teks biasa `POCTF{` cocok dengan `KJ>OA;` dengan substitusi sederhana:
 
-- letters, `>`, `@`, and `=` shift by +5 (`K`→`P`, `J`→`O`, `>`→`C`, ...),
-- digits are unchanged,
-- `:` becomes `.`, `;` becomes `{`, and `V` becomes `}`.
+- huruf, `>`, `@`, dan `=` bergeser +5 (`K`→`P`, `J`→`O`, `>`→`C`, ...),
+- angka tidak berubah,
+- `:` menjadi `.`, `;` menjadi `{`, dan `V` menjadi `}`.
 
-Applying that substitution to the whole ciphertext:
+Menerapkan substitusi itu ke seluruh ciphertext:
 
 ```python
 cipher = "KJ>OA;74:1814:THCUU@FOPK2R4NEO:2GDJS3B3TS=6SDS=G772EGO2EDV"
@@ -49,10 +49,10 @@ for ch in cipher:
 print(''.join(out))
 ```
 
-The output has the canonical shape `POCTF{74.1814.<nonce>.<sig>}`:
+Outputnya memiliki bentuk kanonik `POCTF{74.1814.<nonce>.<sig>}`:
 
 ```text
 ████████████████
 ```
 
-The score decodes to the flag ████████████████.
+Skor diterjemahkan ke flag ████████████████.

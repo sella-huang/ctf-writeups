@@ -2,31 +2,31 @@
 
 | | |
 |---|---|
-| **Section** | wave 3 |
-| **Category** | osint |
-| **Solves** | 292 |
+| **Bagian** | wave 3 |
+| **Kategori** | osint |
+| **Jumlah Solve** | 292 |
 
-## Overview
+## Ikhtisar
 
-The subject is named: Michael Romaniello, illustrator and fine artist, also a comedian and YouTuber. The question is a single date — the year *I Dreamt I was a Child II* was completed.
+Subjeknya bernama: Michael Romaniello, ilustrator dan seniman rupa, juga seorang komedian dan YouTuber. Pertanyaannya adalah satu tanggal — tahun *Saya Bermimpi Saya Masih Kecil II* telah selesai.
 
-The wording is the challenge. Completion is not publication: the year a work appears on social media is only the latest possible date it could have been finished, never the exact one. Social media alone can only bound the answer, so the job is to bound it from both sides.
+Kata-katanya adalah tantangannya. Penyelesaian bukanlah publikasi: tahun kemunculan suatu karya di media sosial hanyalah tanggal paling lambat penyelesaiannya, dan tidak pernah merupakan tanggal pastinya. Media sosial sendiri hanya bisa mengikat jawabannya, jadi tugasnya adalah mengikatnya dari kedua sisi.
 
-## Solve
+## Penyelesaian
 
-Searching the title leads to Romaniello's own Instagram: a post showing the finished painting, dated **16 May 2016**. That is the obvious answer, and it is the trap. A post is the day the photo went up, not the day the brush stopped; submitting 2016 is rejected, which confirms the question really is about completion and sends you looking for a tighter bound.
+Pencarian judul mengarah ke Instagram Romaniello sendiri: sebuah postingan yang menunjukkan lukisan yang telah selesai, tertanggal **16 Mei 2016**. Itu adalah jawaban yang jelas, dan itulah jebakannya. Sebuah postingan adalah hari dimana foto tersebut muncul, bukan hari dimana kuas berhenti; pengiriman 2016 ditolak, yang mengonfirmasi bahwa pertanyaannya benar-benar tentang penyelesaian dan membuat Anda mencari batasan yang lebih ketat.
 
-The title carries a numeral. *II* means there is a first, and scrolling the same account back finds *I Dreamt I was a Child*, published on **20 December 2014**. That is the other end of the interval: the sequel cannot belong to a period earlier than the series it continues.
+Judulnya memuat angka. *II* berarti ada yang pertama, dan menelusuri kembali akun yang sama akan menemukan *I Dreamed I was a Child*, diterbitkan pada **20 Desember 2014**. Itulah ujung lain dari interval tersebut: sekuel tidak boleh berada pada periode yang lebih awal dari seri yang dilanjutkannya.
 
-The completion therefore sits between the two posts:
+Oleh karena itu, penyelesaiannya berada di antara dua pos:
 
 ```
 lower bound  20 December 2014   the first painting is published
 upper bound  16 May 2016        the second painting is posted
 ```
 
-The only year that falls entirely inside that window is 2015.
+Satu-satunya tahun yang sepenuhnya termasuk dalam jendela tersebut adalah tahun 2015.
 
-The general shape of these questions is worth remembering: for "when was this made", a social post is an upper bound, and a predecessor in a numbered series is a lower bound. Two bounds plus a one-year gap is usually the whole answer, and the work's own catalogue entry — the artist's site or an exhibition listing, where works appear as title, year, medium — is the source that would pin it directly.
+Bentuk umum dari pertanyaan-pertanyaan ini perlu diingat: karena "kapan ini dibuat", postingan sosial adalah batas atas, dan pendahulunya dalam rangkaian bernomor adalah batas bawah. Dua batasan ditambah jeda satu tahun biasanya merupakan jawaban keseluruhan, dan entri katalog karya itu sendiri — situs seniman atau daftar pameran, tempat karya muncul sebagai judul, tahun, media — adalah sumber yang akan menyematkannya secara langsung.
 
-The answer is **2015**.
+Jawabannya adalah **2015**.

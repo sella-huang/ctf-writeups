@@ -2,30 +2,30 @@
 
 | | |
 |---|---|
-| **Section** | wave 3 |
-| **Category** | misc |
-| **Solves** | 261 |
+| **Bagian** | wave 3 |
+| **Kategori** | misc |
+| **Jumlah Solve** | 261 |
 
-## Overview
+## Ikhtisar
 
-The handout is a batch-operations memorandum from "Meridian Data Processing Services" with two enclosed 80-column job tickets, suffixes A and B. The memo states that a 16-character nonce is interleaved through each ticket's payload region at a stride given by the card's `PAT` marker, and that the fragments must be combined in the alphabetical order of the suffixes (A, then B). The printed human-readable row at the top of each card is described as damaged, so the information has to be recovered from the punched columns themselves.
+Selebaran tersebut adalah memorandum operasi batch dari "Layanan Pemrosesan Data Meridian" dengan dua tiket pekerjaan 80 kolom terlampir, akhiran A dan B. Memo tersebut menyatakan bahwa nonce 16 karakter disisipkan melalui wilayah muatan setiap tiket dengan langkah yang diberikan oleh penanda kartu `PAT`, dan bahwa fragmen tersebut harus digabungkan dalam urutan abjad sufiks (A, lalu B). Baris tercetak yang dapat dibaca manusia di bagian atas setiap kartu digambarkan sebagai rusak, sehingga informasinya harus diambil kembali dari kolom yang dilubangi itu sendiri.
 
-## Solve
+## Penyelesaian
 
-The two cards are embedded as 1600×640 images on page 2 of the PDF (xrefs 6 and 8). Thresholding the images and extracting connected components isolates the punched holes (roughly 27×12 px ellipses) from the printed glyphs (roughly 8×5 px). The holes fall on a regular lattice:
+Kedua kartu tersebut disematkan sebagai gambar 1600×640 di halaman 2 PDF (xrefs 6 dan 8). Mengambang batas gambar dan mengekstraksi komponen yang terhubung akan mengisolasi lubang berlubang (kira-kira 27×12 px elips) dari mesin terbang yang dicetak (kira-kira 8×5 px). Lubang-lubang tersebut terletak pada kisi-kisi biasa:
 
-- 12 hole rows at y ≈ 111, 153.5, 196.5, 239, 281, 323.5, 366.5, 409, 451, 493.5, 536.5, 579 — these are the standard rows `12, 11, 0, 1, …, 9`;
-- 80 hole columns starting at x ≈ 59.5 with a pitch of ≈ 19 px.
+- 12 baris lubang pada y ≈ 111, 153.5, 196.5, 239, 281, 323.5, 366.5, 409, 451, 493.5, 536.5, 579 — ini adalah baris standar `12, 11, 0, 1, …, 9`;
+- 80 kolom lubang dimulai dari x ≈ 59,5 dengan pitch ≈ 19 px.
 
-Reading the punch sets in Hollerith code (single punch `0`–`9` = digit; zone `12` + digit = `A`–`I`; zone `11` + digit = `J`–`R`; zone `0` + digit = `S`–`Z`; `8,3` = `=`, `0,1` = `/`) recovers both card decks:
+Membaca kumpulan pukulan dalam kode Hollerith (pukulan tunggal `0`–`9` = digit; zona `12` + digit = `A`–`I`; zona `11` + digit = `J`–`R`; zona `0` + digit = `S`–`Z`; `8,3` = `=`, `0,1` = `/`) memulihkan kedua tumpukan kartu:
 
 ```
 CARD A: JOB=1814A   PID1819801/05/67OP?TQW59PAT=54  <36-char payload>
 CARD B: JOB=1814B   PID2986325/07/67OP?KAR32PAT=23  <36-char payload>
 ```
 
-The payload region begins at column 44; the `PAT` value is the two-digit `(offset, stride)` pair used to sample it. For card A the pair `(5, 4)` selects eight positions, and for card B `(2, 3)` selects eight positions; these are the choices that make every extracted character a hexadecimal digit. Each card therefore contributes an eight-character fragment.
+Wilayah muatan dimulai pada kolom 44; nilai `PAT` adalah pasangan dua digit `(offset, stride)` yang digunakan untuk mengambil sampelnya. Untuk kartu A pasangan `(5, 4)` memilih delapan posisi, dan untuk kartu B `(2, 3)` memilih delapan posisi; ini adalah pilihan yang membuat setiap karakter yang diekstraksi menjadi digit heksadesimal. Oleh karena itu, setiap kartu menyumbangkan fragmen delapan karakter.
 
-Concatenating the fragments in suffix order — A first, then B — yields the 16-hex nonce.
+Menggabungkan fragmen dalam urutan sufiks — A terlebih dahulu, lalu B — menghasilkan nonce 16 hex.
 
-The 16-hex nonce is `████████████████`.
+Nonce 16-hex adalah `████████████████`.

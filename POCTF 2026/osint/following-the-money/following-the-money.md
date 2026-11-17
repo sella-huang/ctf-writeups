@@ -2,63 +2,61 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | osint |
-| **Solves** | 35 |
+| **Bagian** | wave 8 |
+| **Kategori** | osint |
+| **Jumlah Solve** | 35 |
 
-## Overview
+## Ikhtisar
 
-A scanned $1 bill is split into thirty torn pieces. Reassembling the jigsaw gives the serial number, the serial leads to a Where's George report, and the report's note points to an astrophotography blog. The blog post contains a star field, a capture timestamp, the camera's field of view, and a second image where the horizon has been deliberately redacted.
+Uang kertas $1 yang dipindai dibagi menjadi tiga puluh sobekan. Merakit kembali teka-teki tersebut akan menghasilkan nomor seri, serial tersebut mengarah ke laporan Where's George, dan catatan laporan tersebut mengarah ke blog astrofotografi. Postingan blog tersebut berisi bidang bintang, stempel waktu pengambilan, bidang pandang kamera, dan gambar kedua yang cakrawalanya sengaja disunting.
 
-The challenge is an OSINT chain, but the last step is astrometry: solve the star field, measure the altitude of the WCS reference star above the marked horizon, and combine that with the sidereal time at the capture instant. This one took about six hours, most of it spent on the viaduct false lead and on the difference between the star at the image centre and the star at the WCS reference pixel.
+Tantangannya adalah rantai OSINT, tetapi langkah terakhirnya adalah astrometri: selesaikan bidang bintang, ukur ketinggian bintang referensi WCS di atas cakrawala yang ditandai, dan gabungkan dengan waktu sidereal pada saat pengambilan gambar. Proses ini memakan waktu sekitar enam jam, sebagian besar dihabiskan di jembatan palsu dan pada perbedaan antara bintang di pusat gambar dan bintang di piksel referensi WCS.
 
-## Solve
+## Penyelesaian
 
-**The fragments.** The thirty PNGs are torn fragments with alpha masks. Sorting them by edge shape and matching the engraved lines reconstructs the bill. The serial number is printed twice, in green, at the top right and bottom left:
+**Fragmennya.** Tiga puluh PNG adalah pecahan yang terkoyak dengan topeng alfa. Menyortirnya berdasarkan bentuk tepi dan mencocokkan garis yang terukir akan merekonstruksi uang kertas. Nomor seri dicetak dua kali, berwarna hijau, di kanan atas dan kiri bawah:
 
 ![The reassembled $1 bill, with the serial number visible](images/02-bill-reassembled.jpg)
 
-A close-up makes the characters unambiguous:
+Close-up membuat karakter menjadi jelas:
 
 ![Close-up of the serial number E10093751B](images/03-serial.jpg)
 
-The serial is `E10093751B`. The `E` prefix is the Federal Reserve district letter for Richmond, the trailing `B` is the block letter, and the bill is a 2017 series $1 with Jovita Carranza's signature. The contact sheet of the original pieces is useful for checking the overlap:
+Serialnya adalah `E10093751B`. Awalan `E` adalah surat distrik Federal Reserve untuk Richmond, `B` di belakangnya adalah surat cetak, dan tagihannya adalah seri $1 tahun 2017 dengan tanda tangan Jovita Carranza. Lembar kontak dari potongan asli berguna untuk memeriksa tumpang tindih:
 
 ![Contact sheet of the thirty torn fragments](images/01-fragments-contact.jpg)
 
-**Where's George.** The challenge supplies `b:Fuzhs8rJ7u`. The direct report URL is
+**Di mana George.** Tantangannya memberikan `b:Fuzhs8rJ7u`. URL laporan langsungnya adalah
 
 ```text
 https://www.wheresgeorge.com/report.php?b=Fuzhs8rJ7u
 ```
 
-The report's note points to the author's blog:
+Catatan laporan menunjuk ke blog penulis:
 
 ```text
 https://pointeroverflowctf.com/challenges/following-the-money/astroblog/
 ```
 
-The bill's travel history contains several hits, but the note is the only part of the report used in the chain.
+Riwayat perjalanan RUU tersebut berisi beberapa hit, tetapi catatan tersebut adalah satu-satunya bagian dari laporan yang digunakan dalam rantai tersebut.
 
-**The blog.** The blog has one relevant post, #137, "The viaduct, finally clear". Its caption gives the capture time:
+**Blog.** Blog ini memiliki satu postingan relevan, #137, "Jembatan, akhirnya selesai". Judulnya memberikan waktu pengambilan:
 
 ```text
 2024-10-12T21:18:38Z
 ```
 
-The page states that the image is 1620 pixels tall and was taken with a 45.9° vertical field of view. It also includes two images: the star field, and a second version with the horizon marked. The second image is a joke: the lower half is covered by a purple `[REDACTED]` panel, a row of cartoon figures sits above it, and a black band labelled `HORIZON` marks the horizon. The horizon is not drawn as a line; the black band is the marker, at pixel row `y = 1443`.
+Halaman tersebut menyatakan bahwa gambar tersebut memiliki tinggi 1620 piksel dan diambil dengan bidang pandang vertikal 45,9°. Ini juga mencakup dua gambar: bidang bintang, dan versi kedua dengan tanda cakrawala. Gambar kedua adalah lelucon: bagian bawah ditutupi oleh panel ungu `[REDACTED]`, deretan gambar kartun berada di atasnya, dan pita hitam berlabel `HORIZON` menandai cakrawala. Cakrawala tidak digambar sebagai sebuah garis; pita hitam adalah penandanya, pada baris piksel `y = 1443`.
 
 ![The original star field over the viaduct](images/04-starfield.jpg)
 
-![The "horizon marked" image: the horizon itself is redacted, but the band marks row 1443](images/05-horizon-redacted.jpg)
-
-**The viaduct trap.** The obvious move is to identify the viaduct. The latitude is given as 54.1116 N, which points at the Yorkshire Dales / Lancashire / Cumbria border. We compared Ribblehead, Clapham/Wenning, the unnamed Skipton & Wennington viaduct, the Helwith Bridge group, and the Bentham line. Ribblehead is visually close but sits about 11 km north of the stated latitude. Clapham is close in latitude but has fewer arches and a different curve. None of the candidates fits both the latitude and the perspective. The viaduct is a red herring: the challenge never asks for the viaduct, it asks for the camera's longitude.
+![The "horizon marked" image: the horizon itself is redacted, but the band marks row 1443](images/05-horizon-redacted.jpg)**Perangkap jembatan.** Langkah yang jelas adalah mengidentifikasi jembatan tersebut. Garis lintang diberikan sebagai 54.1116 N, yang menunjuk pada perbatasan Yorkshire Dales / Lancashire / Cumbria. Kami membandingkan Ribblehead, Clapham/Wenning, jembatan Skipton & Wennington yang tidak disebutkan namanya, grup Jembatan Helwith, dan jalur Bentham. Ribblehead secara visual dekat tetapi terletak sekitar 11 km sebelah utara dari garis lintang yang disebutkan. Clapham memiliki garis lintang yang dekat tetapi memiliki lebih sedikit lengkungan dan kurva yang berbeda. Tak satu pun kandidat yang cocok dengan garis lintang dan perspektifnya. Jembatan itu adalah ikan haring merah: tantangannya tidak pernah menanyakan jembatan itu, ia menanyakan garis bujur kamera.
 
 ![Candidate viaducts near the stated latitude; the target latitude is the horizontal line](images/08-viaduct-candidates.png)
 
-The search log records the coordinates, the rejected candidates, and the failed queries.
+Log pencarian mencatat koordinat, kandidat yang ditolak, dan kueri yang gagal.
 
-**Astrometry.** The star field is the real sensor. Astrometry.net solves the image and returns a WCS. The reference point is not the star at the image centre; it is the WCS reference star at `CRPIX`:
+**Astrometri.** Bidang bintang adalah sensor sebenarnya. Astrometry.net memecahkan gambar dan mengembalikan WCS. Titik referensinya bukanlah bintang di pusat gambar; itu adalah bintang referensi WCS di `CRPIX`:
 
 ```text
 CRVAL1 =   9.5355366203°   (RA)
@@ -67,11 +65,11 @@ CRPIX1 =  63.2815876007
 CRPIX2 = 660.067301432
 ```
 
-The annotated overlay shows the matched stars:
+Hamparan beranotasi menunjukkan bintang yang cocok:
 
 ![Astrometry.net reference stars over the original image](images/06-astrometry-overlay.jpg)
 
-**The altitude.** The reference star's pixel row is `660.067301432`. The horizon is at row `1443`. With a 45.9° vertical FOV over 1620 pixels, the star's altitude above the horizon is
+**Ketinggian.** Baris piksel bintang referensi adalah `660.067301432`. Cakrawala berada pada baris `1443`. Dengan FOV vertikal 45,9° pada 1620 piksel, ketinggian bintang di atas cakrawala adalah
 
 ```text
 alt = (1443 - 660.067301432) * 45.9 / 1620
@@ -80,13 +78,13 @@ alt = (1443 - 660.067301432) * 45.9 / 1620
 
 ![The altitude of the WCS reference star above the marked horizon](images/07-altitude-diagram.png)
 
-**The longitude.** The capture time gives the Greenwich sidereal time:
+**Bujur.** Waktu pengambilan menunjukkan waktu sidereal Greenwich:
 
 ```text
 GST = 280.46061837 + 360.98564736629 * (t - J2000) / 86400  (mod 360)
 ```
 
-At `2024-10-12T21:18:38Z`, `GST = 341.595636°`. The hinted longitude formula is
+Di `2024-10-12T21:18:38Z`, `GST = 341.595636°`. Rumus garis bujur yang diisyaratkan adalah
 
 ```text
 longitude = GST - RA
@@ -96,14 +94,14 @@ longitude = GST - RA
 
 ![The GST, the star's RA, and the resulting longitude](images/09-longitude-diagram.png)
 
-Submitting `-27.939901` is accepted and returns the challenge flag:
+Pengiriman `-27.939901` diterima dan mengembalikan tanda tantangan:
 
 ```text
 ████████████████
 ```
 
-**What did not work.** The full spherical branch, using the altitude and the latitude to recover the hour angle, produces a different longitude and was rejected. The star at the image centre also produces a different longitude. The accepted path is the literal `GST - RA` using the WCS reference star. The search log has the details.
+**Apa yang tidak berhasil.** Cabang berbentuk bola penuh, yang menggunakan ketinggian dan garis lintang untuk memulihkan sudut jam, menghasilkan garis bujur yang berbeda dan ditolak. Bintang di pusat gambar juga menghasilkan garis bujur yang berbeda. Jalur yang diterima adalah `GST - RA` literal menggunakan bintang referensi WCS. Log pencarian memiliki detailnya.
 
-**Reproduce it.** The raw measurements are in [`notes/measurements.md`](notes/measurements.md), the full search log is in [`notes/search-log.md`](notes/search-log.md), and the calculation can be reproduced with [`scripts/solve_longitude.py`](scripts/solve_longitude.py). The diagrams are generated by [`scripts/make_diagrams.py`](scripts/make_diagrams.py). Image credits are in [`credits.md`](credits.md).
+**Reproduksi.** Pengukuran mentah ada di [`notes/measurements.md`](notes/measurements.md), log penelusuran lengkap ada di [`notes/search-log.md`](notes/search-log.md), dan penghitungan dapat direproduksi dengan [`scripts/solve_longitude.py`](scripts/solve_longitude.py). Diagram dibuat oleh [`scripts/make_diagrams.py`](scripts/make_diagrams.py). Kredit gambar ada di [`credits.md`](credits.md).
 
-The longitude is -27.939901°.
+Garis bujurnya adalah -27.939901°.

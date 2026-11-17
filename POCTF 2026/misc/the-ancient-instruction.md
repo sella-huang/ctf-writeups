@@ -2,24 +2,24 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | misc |
-| **Solves** | 66 |
+| **Bagian** | wave 8 |
+| **Kategori** | misc |
+| **Jumlah Solve** | 66 |
 
-## Overview
+## Ikhtisar
 
-The artifact is a Brainfuck program written with the eight trigrams `☰☱☲☳☴☵☶☷`. Brainfuck has exactly eight commands, so the puzzle is to recover the permutation that maps the trigrams to `><+-.,[]`. The program's first output is a short header naming the command alphabet, followed by the flag.
+Artefak tersebut adalah program Brainfuck yang ditulis dengan delapan trigram `☰☱☲☳☴☵☶☷`. Brainfuck memiliki delapan perintah, jadi teka-tekinya adalah memulihkan permutasi yang memetakan trigram ke `><+-.,[]`. Output pertama program ini adalah header pendek yang memberi nama alfabet perintah, diikuti dengan bendera.
 
-## Solve
+## Penyelesaian
 
-Index the trigrams in the order `☰☱☲☳☴☵☶☷`, convert the artifact to an instruction stream, and try the 8! possible command permutations. The correct mapping is:
+Indeks trigram dalam urutan `☰☱☲☳☴☵☶☷`, ubah artefak menjadi aliran instruksi, dan coba 8! kemungkinan permutasi perintah. Pemetaan yang benar adalah:
 
 ```text
 ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷
 ] < > - , . + [
 ```
 
-A small interpreter is enough:
+Seorang penerjemah kecil sudah cukup:
 
 ```python
 symbols = "☰☱☲☳☴☵☶☷"
@@ -30,4 +30,4 @@ code = [command[index[c]] for c in open("program.txt", encoding="utf-8").read()
         if c in index]
 ```
 
-Run the resulting Brainfuck program. It prints the command alphabet `+-><.,[]` as a self-check and then the flag. The accepted flag was `████████████████`.
+Jalankan program Brainfuck yang dihasilkan. Ini mencetak alfabet perintah `+-><.,[]` sebagai pemeriksaan mandiri dan kemudian bendera. Flag yang diterima adalah `████████████████`.

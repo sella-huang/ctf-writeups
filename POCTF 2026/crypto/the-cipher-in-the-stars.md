@@ -2,30 +2,30 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | crypto |
-| **Solves** | 73 |
+| **Bagian** | wave 8 |
+| **Kategori** | crypto |
+| **Jumlah Solve** | 73 |
 
-## Overview
+## Ringkasan
 
-The transcript contains 1,400 photon records, four announced state pairs, 128 parity-check rows, and a 128-bit syndrome. Each pair contains one rectilinear (`+`) state and one diagonal (`x`) state. The sender announces the pair; the receiver records a basis and an outcome.
+Transkrip tersebut berisi 1.400 catatan foton, empat pasangan negara bagian yang diumumkan, 128 baris pemeriksaan paritas, dan sindrom 128-bit. Setiap pasangan berisi satu keadaan bujursangkar (`+`) dan satu keadaan diagonal (`x`). Pengirim mengumumkan pasangan tersebut; penerima mencatat dasar dan hasil.
 
-A record is conclusive only when the receiver's outcome is orthogonal to the announced state in the receiver's basis. In that case the sender must have sent the other announced state, so its bit is the sifted bit. All other records are discarded.
+Sebuah catatan bersifat konklusif hanya jika hasil yang diperoleh penerima bersifat ortogonal terhadap keadaan yang diumumkan di dasar penerima. Dalam hal ini pengirim harus mengirimkan negara lain yang diumumkan, jadi bitnya adalah bit yang diayak. Semua catatan lainnya akan dibuang.
 
-## Solve
+## Penyelesaian
 
-Apply the unambiguous-state-discrimination rule to the 1,400 records. There are 347 conclusive bits. The first 256 are the raw sifted key used by the reconciliation layer.
+Terapkan aturan diskriminasi negara yang jelas pada 1.400 catatan. Ada 347 bit konklusif. 256 yang pertama adalah kunci mentah yang diayak yang digunakan oleh lapisan rekonsiliasi.
 
-For each of the 128 published parity-check rows, compute the parity of the corresponding bits in the first 256 sifted bits. Compare these parities with the published syndrome; the difference is the syndrome of the transmission errors. Set up the 128 linear equations over GF(2) and solve for a low-weight error vector with a SAT solver. The sparse solution flips the following zero-indexed positions:
+Untuk masing-masing dari 128 baris pemeriksaan paritas yang diterbitkan, hitung paritas bit-bit yang sesuai dalam 256 bit pertama yang diayak. Bandingkan paritas ini dengan sindrom yang dipublikasikan; yang membedakannya adalah sindrom kesalahan transmisinya. Siapkan 128 persamaan linier melalui GF(2) dan selesaikan vektor kesalahan berbobot rendah dengan penghancur SAT. Solusi sparse membalik posisi yang diindeks nol berikut ini:
 
 ```text
 1, 18, 54, 91, 95, 106, 137, 164, 173, 211
 ```
 
-Flip those ten bits, then pack the corrected 256 bits most-significant-bit first into 32 bytes. The resulting hex string is the recovered shared key:
+Balikkan sepuluh bit tersebut, lalu kemas 256 bit bit paling signifikan yang telah dikoreksi terlebih dahulu menjadi 32 byte. String hex yang dihasilkan adalah kunci bersama yang diinginkan:
 
 ```text
 ████████████████
 ```
 
-The accepted answer was the recovered key `████████████████`.
+Jawaban yang diterima adalah kunci yang menyampaikan `████████████████`.

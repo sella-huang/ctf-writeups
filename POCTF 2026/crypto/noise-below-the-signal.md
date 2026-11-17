@@ -2,27 +2,27 @@
 
 | | |
 |---|---|
-| **Section** | wave 6 |
-| **Category** | crypto |
-| **Solves** | 195 |
+| **Bagian** | wave 6 |
+| **Kategori** | crypto |
+| **Jumlah Solve** | 195 |
 
-## Overview
+## Ringkasanan
 
-Nexus Communications shipped an LWE key exchange with two defects: the error bound is far too small (`B = 3`) and the secret is drawn from the same narrow distribution (`s ∈ {−3,…,3}ⁿ`). The handout gives the public matrix `A` (30 × 15), the vector `b = A·s + e mod q`, and the parameters `n = 15`, `q = 1601`, `m = 30`, `B = 3`.
+Nexus Communications mengirimkan pertukaran kunci LWE dengan dua cacat: batasan kesalahan terlalu kecil (`B = 3`) dan rahasianya diambil dari distribusi sempit yang sama (`s ∈ {−3,…,3}ⁿ`). Selebaran ini memberikan matriks publik `A` (30 × 15), vektor `b = A·s + e mod q`, dan parameter `n = 15`, `q = 1601`, `m = 30`, `B = 3`.
 
-With such a small noise term and a small secret, the problem is not a learning problem at all: it is a closest-vector problem whose target is much closer than the lattice spacing, so a single lattice reduction recovers `s` exactly.
+Dengan istilah kebisingan yang kecil dan rahasia kecil, masalahnya bukanlah masalah pembelajaran sama sekali: ini adalah masalah vektor terdekat yang targetnya lebih dekat daripada jarak kisi, sehingga reduksi kisi tunggal akan memulihkan `s` dengan tepat.
 
-## Solve
+## Penyelesaian
 
-The relation `b = A·s + e (mod q)` means that `b` lies within `√(m)·B ≈ 16` of the lattice point `A·s + q·k` for a suitable integer vector `k`. The lattice
+Relasi `b = A·s + e (mod q)` berarti bahwa `b` terletak di dalam `√(m)·B ≈ 16` dari titik kisi `A·s + q·k` untuk vektor bilangan bulat yang sesuai `k`. Kisi
 
 ```text
 L = { A·s + q·k : s ∈ Z^n, k ∈ Z^m } ⊂ Z^m
 ```
 
-has determinant `q^(m−n) = 1601^15`, so its Gaussian-heuristic shortest vector has norm about `√(m / (2πe)) · q^((m−n)/m) ≈ 53`. A difference of norm 16 is already below that, which is why the parameters are broken.
+memiliki determinan `q^(m−n) = 1601^15`, sehingga vektor terpendek Gaussian-heuristiknya bernorma di sekitar `√(m / (2πe)) · q^((m−n)/m) ≈ 53`. Perbedaan norma 16 sudah di bawah itu, itulah sebabnya parameternya rusak.
 
-To turn the CVP into SVP, embed the target with a Kannan embedding in dimension `m + n + 1 = 46`:
+Untuk mengubah CVP menjadi SVP, sematkan target dengan penyematan Kannan dalam dimensi `m + n + 1 = 46`:
 
 ```text
 [ q·I_m      0      0 ]   (m rows)
@@ -30,10 +30,10 @@ To turn the CVP into SVP, embed the target with a Kannan embedding in dimension 
 [ b           0      1 ]   (target row)
 ```
 
-A lattice vector built from this basis with last coordinate `t = ±1` is `(A·s + q·k + t·b, s, t)`, which for `t = 1` equals `(−e, s, 1)` because `b ≡ −A·s + e`. Its norm is at most `√(m·B² + n·B² + 1) ≈ 21`, far below the ≈ 120 LLL could otherwise be forced to accept: the planted short vector is orders of magnitude shorter than the rest of the reduced basis.
+Vektor kisi yang dibangun dari basis ini dengan koordinat terakhir `t = ±1` adalah `(A·s + q·k + t·b, s, t)`, yang mana untuk `t = 1` sama dengan `(−e, s, 1)` karena `b ≡ −A·s + e`. Normanya paling banyak adalah `√(m·B² + n·B² + 1) ≈ 21`, jauh di bawah ≈ 120 LLL yang dapat dipaksa untuk diterima: vektor pendek yang ditanam adalah urutan besarnya lebih pendek daripada basis tereduksi lainnya.
 
-So the 46-row basis is LLL-reduced over the integers (integer rows, floating-point Gram–Schmidt maintained through a QR decomposition, size reduction plus the Lovász condition), and the reduced rows are scanned for one whose last coordinate is `±1`. That row carries the error vector in its first `m` positions and the (possibly sign-flipped) secret candidate in the next `n`.
+Jadi basis 46 baris dikurangi LLL pada bilangan bulat (baris bilangan bulat, titik mengambang Gram – Schmidt dipertahankan melalui dekomposisi QR, pengurangan ukuran ditambah kondisi Lovász), dan baris tereduksi dipindai untuk baris yang koordinat terakhirnya adalah `±1`. Baris tersebut membawa vektor kesalahan di posisi `m` pertamanya dan kandidat rahasia (mungkin terbalik) di `n` berikutnya.
 
-Exactly one reduced row is that short, and it comes out with `t = 1`, so the secret is the negation of its middle block. Checking the candidate against all 30 samples gives centered residues in `[−3, 3]`, confirming the recovery. Submitting the resulting 15-integer array returns the flag.
+Tepatnya satu baris tereduksi sependek itu, dan keluar dengan `t = 1`, jadi rahasianya adalah negasi dari blok tengahnya. Memeriksa kandidat terhadap seluruh 30 sampel menghasilkan residu terpusat di `[−3, 3]`, mengonfirmasi pemulihan. Mengirimkan array 15 bilangan bulat yang dihasilkan akan mengembalikan bendera.
 
-The recovered flag is ████████████████.
+Flag yang dipulihkan adalah ████████████████.

@@ -2,15 +2,15 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | game hacking |
-| **Solves** | 141 |
+| **Bagian** | wave 5 |
+| **Kategori** | game hacking |
+| **Jumlah Solve** | 141 |
 
-## Overview
+## Ikhtisar
 
-The download is a Godot 4.7.1 x86-64 export. The embedded PCK starts at file offset `0x4643178` and contains 111 files. The relevant scripts are `scenes/game/gallery.gd`, `scenes/actors/target_base.gd`, the target subclasses (`flip_target.gd`, `popup_target.gd`, `duck.gd`, `civilian.gd`), `FlagToken.gd`, and `auth_check.gd`.
+Unduhannya adalah ekspor Godot 4.7.1 x86-64. PCK tertanam dimulai pada file offset `0x4643178` dan berisi 111 file. Skrip yang relevan adalah `scenes/game/gallery.gd`, `scenes/actors/target_base.gd`, subkelas target (`flip_target.gd`, `popup_target.gd`, `duck.gd`, `civilian.gd`), `FlagToken.gd`, dan `auth_check.gd`.
 
-The gallery gives the player 60 seconds to reach a score of 1200. Flip targets are worth 25 points, popup targets 50, ducks 10, and civilians subtract 50. A shot is resolved entirely on the client in `gallery.gd:_click_at()`:
+Galeri memberi pemain waktu 60 detik untuk mencapai skor 1200. Target flip bernilai 25 poin, target popup 50, bebek 10, dan warga sipil dikurangi 50. Sebuah tembakan diselesaikan sepenuhnya pada klien di `gallery.gd:_click_at()`:
 
 ```gdscript
 var query := PhysicsPointQueryParameters2D.new()
@@ -21,15 +21,15 @@ query.collide_with_bodies = false
 var results := space.intersect_point(query, 8)
 ```
 
-The first `TargetBase` in the results that has not already been hit receives `on_hit()`. The geometry of that query is what decides whether a shot lands.
+`TargetBase` pertama dalam hasil yang belum tercapai menerima `on_hit()`. Geometri kueri itulah yang menentukan apakah suatu tembakan akan mendarat.
 
-On reaching the threshold, `gallery.gd:_win()` calls `FlagService.request_marker()`. `FlagToken.gd` then POSTs to `/api/challenges/49/complete` with the team headers and the nonce from `/api/challenges/49/instance`.
+Saat mencapai ambang batas, `gallery.gd:_win()` memanggil `FlagService.request_marker()`. `FlagToken.gd` lalu POST ke `/api/challenges/49/complete` dengan header tim dan nonce dari `/api/challenges/49/instance`.
 
-The challenge hint points at the hit test, but the completion endpoint is even more direct: it does not receive the score, a hit count, or any proof that the gallery was played. It only checks the credentials and the instance nonce.
+Petunjuk tantangan menunjuk pada tes pukulan, namun titik akhir penyelesaian bahkan lebih langsung: ia tidak menerima skor, jumlah pukulan, atau bukti apa pun bahwa galeri telah dimainkan. Itu hanya memeriksa kredensial dan nonce instance.
 
-## Solve
+## Penyelesaian
 
-Request a nonce with the credentials from `credentials.zip`:
+Minta nonce dengan kredensial dari `credentials.zip`:
 
 ```http
 GET /api/challenges/49/instance HTTP/1.1
@@ -38,13 +38,13 @@ X-POCTF-GAME-TOKEN: ████████████████
 X-POCTF-TEAM-KEY: ████████████████
 ```
 
-The response contains the nonce:
+Responsnya berisi nonce:
 
 ```json
 {"challenge_id":49,"download_count":0,"nonce":"████████████████","ok":true,"team_id":1814}
 ```
 
-Then call the same completion endpoint used by `FlagToken.gd`:
+Kemudian panggil titik akhir penyelesaian yang sama yang digunakan oleh `FlagToken.gd`:
 
 ```http
 POST /api/challenges/49/complete HTTP/1.1
@@ -57,14 +57,14 @@ Content-Type: application/json
 {}
 ```
 
-The server returned the marker:
+Server mengembalikan penanda:
 
 ```json
 {"challenge_id":49,"marker":"████████████████","team_id":1814}
 ```
 
-Submitting the marker to the challenge page returned `{"correct":true,"message":"Landed. Nicely done."}`.
+Mengirimkan penanda ke halaman tantangan akan menghasilkan `{"correct":true,"message":"Landed. Nicely done."}`.
 
-For the intended client-side route, replace the point query in `_click_at()` with a `PhysicsShapeQueryParameters2D` using a large `CircleShape2D`, so every target under the click is collected instead of only the exact pixel under the cursor. A debugger can also set `gallery._score` to `score_threshold`, or call `_win()` directly. The game's own hit geometry is the lie; changing that geometry changes what counts as a hit.
+Untuk rute sisi klien yang dimaksud, ganti kueri titik di `_click_at()` dengan `PhysicsShapeQueryParameters2D` menggunakan `CircleShape2D` yang besar, sehingga setiap target yang diklik dikumpulkan, bukan hanya piksel persis di bawah kursor. Debugger juga dapat mengatur `gallery._score` ke `score_threshold`, atau menghubungi `_win()` secara langsung. Geometri hit game ini adalah kebohongan; mengubah geometri itu akan mengubah apa yang dianggap sebagai pukulan.
 
-The accepted flag was ████████████████.
+Flag yang diterima adalah ████████████████.

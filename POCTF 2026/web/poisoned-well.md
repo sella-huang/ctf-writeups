@@ -2,17 +2,17 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | web |
-| **Solves** | 579 |
+| **Bagian** | wave 2 |
+| **Kategori** | web |
+| **Jumlah Solve** | 579 |
 
-## Overview
+## Ikhtisar
 
-The Daily Whatever is served behind a response cache that is keyed only on the request path and the session cookie. The page's canonical link, RSS alternate link, and Open Graph URL are generated from the `X-Forwarded-Host` header, which the cache does not take into account. A single request carrying a forged host therefore stores a poisoned homepage under the normal cache key, and subsequent visitors receive the attacker-controlled URL.
+Daily Apapun disajikan di belakang cache respons yang hanya dikunci pada jalur permintaan dan cookie sesi. Tautan kanonik halaman, tautan alternatif RSS, dan URL Grafik Terbuka dihasilkan dari header `X-Forwarded-Host`, yang tidak diperhitungkan oleh cache. Oleh karena itu, satu permintaan yang membawa host palsu menyimpan beranda yang diracuni di bawah kunci cache normal, dan pengunjung berikutnya menerima URL yang dikendalikan penyerang.
 
-## Solve
+## Penyelesaian
 
-Signing in at `/login` with the team session token returns a signed session cookie that encodes the team identifier and the team nonce. The homepage then renders its metadata from the request host:
+Masuk di `/login` dengan token sesi tim mengembalikan cookie sesi bertanda tangan yang mengkodekan pengidentifikasi tim dan nonce tim. Halaman beranda kemudian merender metadatanya dari host permintaan:
 
 ```html
 <link rel="canonical" href="https://poisoned-well.pointeroverflowctf.com/">
@@ -20,7 +20,7 @@ Signing in at `/login` with the team session token returns a signed session cook
 <meta property="og:url" content="https://poisoned-well.pointeroverflowctf.com/">
 ```
 
-The page itself advertises the weakness: the cache is keyed strictly on request path plus session cookie, and all other request-modifying headers are treated as informational. Supplying a different host through `X-Forwarded-Host` is reflected into those three URLs while the response is still stored under the ordinary path and cookie key:
+Halaman itu sendiri mengiklankan kelemahannya: cache dikunci secara ketat pada jalur permintaan ditambah cookie sesi, dan semua header pengubah permintaan lainnya diperlakukan sebagai informasi. Menyediakan host yang berbeda melalui `X-Forwarded-Host` tercermin dalam ketiga URL tersebut sementara responsnya masih disimpan di bawah jalur biasa dan kunci cookie:
 
 ```bash
 curl -b cookies.txt -D - \
@@ -28,18 +28,18 @@ curl -b cookies.txt -D - \
   https://poisoned-well.pointeroverflowctf.com/
 ```
 
-That response comes back with `X-Cache: MISS` and with the canonical, alternate, and `og:url` values pointing at `https://news.example/`. A second request without the header then hits the poisoned entry:
+Respons tersebut muncul kembali dengan `X-Cache: MISS` dan dengan nilai kanonik, alternatif, dan `og:url` yang menunjuk pada `https://news.example/`. Permintaan kedua tanpa header kemudian mengenai entri beracun:
 
 ```bash
 curl -b cookies.txt -D - https://poisoned-well.pointeroverflowctf.com/
 ```
 
-This time the cache answers with `X-Cache: HIT`, and the HTML still contains the attacker-supplied host in its metadata, even though the request carried the legitimate host. The `Vary: Cookie` header explains why the entry is scoped to the team's session, so the same poisoned page is served to every later request made with that cookie, including the attacker's own.
+Kali ini cache menjawab dengan `X-Cache: HIT`, dan HTML masih berisi host yang disediakan penyerang dalam metadatanya, meskipun permintaan tersebut membawa host yang sah. Header `Vary: Cookie` menjelaskan mengapa entri tersebut tercakup dalam sesi tim, sehingga halaman beracun yang sama disajikan untuk setiap permintaan berikutnya yang dibuat dengan cookie tersebut, termasuk milik penyerang.
 
-The verification endpoint reads the canonical host out of the cached response and confirms the poisoning:
+Titik akhir verifikasi membaca host kanonik dari respons yang di-cache dan mengonfirmasi peracunan:
 
 ```bash
 curl -b cookies.txt https://poisoned-well.pointeroverflowctf.com/verify
 ```
 
-It reports `"cached_host": "news.example/"` together with `"ok": true` and the team's marker. If a clean response is accidentally cached first, `/reset` clears the entry so the poisoning can be repeated. The submitted flag was POCTF{82.1814.████████████████.████████████████} and it was accepted.
+Ini melaporkan `"cached_host": "news.example/"` bersama dengan `"ok": true` dan penanda tim. Jika respons bersih secara tidak sengaja di-cache terlebih dahulu, `/reset` akan menghapus entri sehingga peracunan dapat terulang. Flag yang dikirimkan adalah POCTF{82.1814.████████████████.████████████████} dan diterima.

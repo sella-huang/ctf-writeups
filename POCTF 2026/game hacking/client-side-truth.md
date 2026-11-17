@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | game hacking |
-| **Solves** | 53 |
+| **Bagian** | wave 8 |
+| **Kategori** | game hacking |
+| **Jumlah Solve** | 53 |
 
-## Overview
+## Ikhtisar
 
-The game is a Godot client. Its scripts are packed into a PCK embedded in the ELF; the `pck` section starts at file offset `0x4611138`. The PCK header gives the file-table offset, the table lists 128 files, and each entry provides the data offset, size, and MD5. Extracting and decompiling the `.gdc` scripts reveals the network protocol in `NetworkClient.gdc`:
+Game ini adalah klien Godot. Skripnya dikemas ke dalam PCK yang tertanam di ELF; bagian `pck` dimulai pada file offset `0x4611138`. Header PCK memberikan offset file-tabel, tabel mencantumkan 128 file, dan setiap entri menyediakan offset data, ukuran, dan MD5. Mengekstrak dan mendekompilasi skrip `.gdc` mengungkapkan protokol jaringan di `NetworkClient.gdc`:
 
 ```text
 POST /challenges/client-side-truth/game/start
@@ -18,11 +18,11 @@ GET  /challenges/client-side-truth/game/state
 GET  /challenges/client-side-truth/game/win_marker
 ```
 
-The client authenticates with `Authorization: Bearer <game.token>` and `X-Team-ID: <team_id>`. The boss starts with 500 HP and each shot does 50 damage. Damage is only valid from inside the `count_room` area, but the position is supplied by the client and is not validated server-side.
+Klien mengautentikasi dengan `Authorization: Bearer <game.token>` dan `X-Team-ID: <team_id>`. Bos memulai dengan 500 HP dan setiap tembakan menghasilkan 50 kerusakan. Kerusakan hanya berlaku dari dalam area `count_room`, namun posisi disediakan oleh klien dan tidak divalidasi sisi server.
 
-## Solve
+## Penyelesaian
 
-Start a game session, then set the position inside the count room. The working position is `[-20, 21.8, 18.1]`. Fire ten times; each call subtracts 50 HP, reducing the boss to zero. Query the state to see `"won": true`, then fetch the win marker:
+Mulailah sesi permainan, lalu atur posisi di dalam ruang hitung. Posisi kerja adalah `[-20, 21.8, 18.1]`. Tembak sepuluh kali; setiap panggilan mengurangi 50 HP, mengurangi bos menjadi nol. Kueri status untuk melihat `"won": true`, lalu ambil penanda kemenangan:
 
 ```python
 import json, time, urllib.request
@@ -51,4 +51,4 @@ for _ in range(10):
 print(req("GET", "/challenges/client-side-truth/game/win_marker"))
 ```
 
-The win marker contains the flag. The accepted flag was `████████████████`.
+Penanda kemenangan berisi bendera. Flag yang diterima adalah `████████████████`.

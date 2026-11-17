@@ -2,20 +2,20 @@
 
 | | |
 |---|---|
-| **Section** | wave 1 |
-| **Category** | web |
-| **Solves** | 764 |
+| **Bagian** | wave 1 |
+| **Kategori** | web |
+| **Jumlah Solve** | 764 |
 
-## Overview
+## Ikhtisar
 
-The portal is a GraphQL API and it says so on the front page:
+Portalnya adalah API GraphQL dan tertulis demikian di halaman depan:
 
 ```
 # Welcome to the portal.
 # Introspection is enabled — start by exploring the schema.
 ```
 
-So the first query is introspection plus a sanity check on the session:
+Jadi pertanyaan pertama adalah introspeksi ditambah pemeriksaan kewarasan pada sesi tersebut:
 
 ```graphql
 {
@@ -25,9 +25,9 @@ So the first query is introspection plus a sanity check on the session:
 }
 ```
 
-`me` returns `user_1814` / `MEMBER`, the schema lists `Query`, `User`, `Team` and `UserRoleEnum`, and `user(id: "1")` is `null`.
+`me` mengembalikan `user_1814` / `MEMBER`, skema mencantumkan `Query`, `User`, `Team` dan `UserRoleEnum`, dan `user(id: "1")` adalah `null`.
 
-Introspecting the two object types gives the full picture:
+Introspeksi kedua jenis objek memberikan gambaran lengkap:
 
 ```graphql
 {
@@ -37,7 +37,7 @@ Introspecting the two object types gives the full picture:
 }
 ```
 
-The query root has exactly two fields: `me` and `user(id: ID!)`. And on `User`:
+Akar kueri memiliki dua bidang: `me` dan `user(id: ID!)`. Dan pada `User`:
 
 ```graphql
 {
@@ -47,17 +47,17 @@ The query root has exactly two fields: `me` and `user(id: ID!)`. And on `User`:
 }
 ```
 
-`id`, `username`, `role`, `team` and — the interesting one — `privateNotes: String`. Reading our own returns a decoy: `"Grocery list, personal reminders. Nothing worth reading."`
+`id`, `username`, `role`, `team` dan — yang menarik — `privateNotes: String`. Membaca sendiri akan menghasilkan umpan: `"Grocery list, personal reminders. Nothing worth reading."`
 
-`Team` completes the map with `id`, `name` and `members: [User]`.
+`Team` melengkapi peta dengan `id`, `name` dan `members: [User]`.
 
-## Solve
+## Penyelesaian
 
-The obvious move is to enumerate user IDs through `user(id: ...)`. It goes nowhere: `user(id: "1")` and `user(id: "user_0")` both return `null`, and the scheme is not even consistent — our account is `user_1814` but the admin is `admin_1814`, so brute forcing `user_N` would never have reached it. The ID space is a wall.
+Langkah yang jelas adalah menghitung ID pengguna melalui `user(id: ...)`. Tidak ada gunanya: `user(id: "1")` dan `user(id: "user_0")` keduanya mengembalikan `null`, dan skemanya bahkan tidak konsisten — akun kami adalah `user_1814` tetapi adminnya adalah `admin_1814`, jadi memaksa `user_N` tidak akan pernah mencapainya. Ruang ID adalah dinding.
 
-The schema points somewhere better. `Team.members` returns a list of `User` objects, which means the server resolves other users for us, and `User.privateNotes` is a plain scalar with no visibility logic attached to it. Authorization is enforced, if at all, at the query root: `me` is scoped to the caller and `user(id:)` filters what you can ask for. Nothing checks the `User` objects that are reached *through a relation* instead of through the root.
+Skemanya menunjuk ke tempat yang lebih baik. `Team.members` mengembalikan daftar objek `User`, yang berarti server menyelesaikan pengguna lain untuk kami, dan `User.privateNotes` adalah skalar biasa tanpa logika visibilitas yang melekat padanya. Otorisasi diterapkan, jika ada, pada akar kueri: `me` dicakup ke pemanggil dan `user(id:)` memfilter apa yang dapat Anda minta. Tidak ada yang memeriksa objek `User` yang dijangkau *melalui relasi* selain melalui root.
 
-So the whole challenge is one query that follows the graph:
+Jadi keseluruhan tantangannya adalah satu kueri yang mengikuti grafik:
 
 ```graphql
 {
@@ -74,7 +74,7 @@ So the whole challenge is one query that follows the graph:
 }
 ```
 
-The response contains two members, us and the admin:
+Responsnya berisi dua anggota, kami dan admin:
 
 ```json
 {
@@ -93,6 +93,6 @@ The response contains two members, us and the admin:
 }
 ```
 
-The flag is in the admin's notes.
+Flag-nya ada di catatan admin.
 
-Introspection is not the vulnerability, it is the map: it turned a blind ID search into a known edge to follow. The actual bug is that object-level authorization lives on the query entry points and not on the field resolvers, so any relation acts as a way around it. The check belongs on `User.privateNotes` (or on `Team.members`), where the decision is "may this caller see this specific user", not "which users may this caller ask for".
+Introspeksi bukanlah kerentanan, melainkan peta: introspeksi mengubah pencarian ID secara buta menjadi sebuah keunggulan yang dapat diikuti. Bug sebenarnya adalah otorisasi tingkat objek berada pada titik masuk kueri dan bukan pada penyelesai lapangan, sehingga relasi apa pun bertindak sebagai jalan keluarnya. Cek tersebut ada di `User.privateNotes` (atau di `Team.members`), dengan keputusannya adalah "bolehkah penelepon ini melihat pengguna spesifik ini", bukan "pengguna mana yang mungkin diminta oleh penelepon ini".

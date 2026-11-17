@@ -2,18 +2,18 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | reverse engineering |
-| **Solves** | 116 |
+| **Bagian** | wave 5 |
+| **Kategori** | reverse engineering |
+| **Jumlah Solve** | 116 |
 
-## Overview
+## Ikhtisar
 
-The oracle is an ONNX neural network that accepts an 8-element vector in `[0,1]` and returns a scalar near 1 only for the team's 8-byte key, normalized by dividing each byte by 255.
+Oracle adalah jaringan saraf ONNX yang menerima vektor 8 elemen di `[0,1]` dan mengembalikan skalar mendekati 1 hanya untuk kunci 8 byte tim, dinormalisasi dengan membagi setiap byte dengan 255.
 
-## Solve
+## Penyelesaian
 
-The model is a three-layer MLP, `8 → 64 → 64 → 1`, with LeakyReLU (slope 0.1) on both hidden layers. I reimplemented the forward pass in NumPy, derived the analytic gradient, and ran Adam gradient ascent on the input, clipping to `[0,1]`.
+Modelnya adalah MLP tiga lapis, `8 → 64 → 64 → 1`, dengan LeakyReLU (kemiringan 0,1) di kedua lapisan tersembunyi. Saya mengimplementasikan kembali forward pass di NumPy, memperoleh gradien analitik, dan menjalankan pendakian gradien Adam pada input, memotong ke `[0,1]`.
 
-Thirty random seeds were optimized for 3000 steps; the best continuous result was rounded to bytes and refined with a ±1 grid search over all eight components. The best input scored `0.9605`, above the required 0.75. The challenge asks for the 16 lowercase hex characters of the resulting 8 bytes.
+Tiga puluh benih acak dioptimalkan untuk 3000 langkah; hasil berkelanjutan terbaik dibulatkan menjadi byte dan disempurnakan dengan pencarian grid ±1 pada kedelapan komponen. Input terbaik mendapat skor `0.9605`, di atas yang disyaratkan 0,75. Tantangannya meminta 16 karakter hex huruf kecil dari 8 byte yang dihasilkan.
 
-The submitted flag was `████████████████` and it was accepted.
+Flag yang dikirimkan adalah `████████████████` dan diterima.

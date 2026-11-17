@@ -2,16 +2,16 @@
 
 | | |
 |---|---|
-| **Section** | wave 7 |
-| **Category** | reverse engineering |
-| **Solves** | 122 |
+| **Bagian** | wave 7 |
+| **Kategori** | reverse engineering |
+| **Jumlah Solve** | 122 |
 
-## Overview
+## Ikhtisar
 
-`apparatus_dissolution.c` embeds the dissolved output in `DATA[]` and exposes the forward cipher. Each of the four passes substitutes every byte through a 256-byte S-box (`TBL`), then rotates the buffer left by one byte.
+`apparatus_dissolution.c` menyematkan output terlarut di `DATA[]` dan mengekspos cipher maju. Masing-masing dari empat lintasan menggantikan setiap byte melalui S-box 256 byte (`TBL`), lalu memutar buffer yang tersisa sebanyak satu byte.
 
-## Solve
+## Penyelesaian
 
-Invert the passes in reverse order. For each pass, rotate the buffer right by one byte, then apply the inverse S-box (`inv[TBL[i]] = i`). After four iterations `DATA[]` decrypts to the flag.
+Balikkan lintasan dalam urutan terbalik. Untuk setiap lintasan, putar buffer ke kanan sebanyak satu byte, lalu terapkan S-box terbalik (`inv[TBL[i]] = i`). Setelah empat iterasi, `DATA[]` mendekripsi ke bendera.
 
-The submitted flag was POCTF{116.1814.████████████████.████████████████} and it was accepted.
+Flag yang dikirimkan adalah POCTF{116.1814.████████████████.████████████████} dan diterima.

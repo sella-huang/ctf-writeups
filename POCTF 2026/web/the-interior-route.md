@@ -2,22 +2,22 @@
 
 | | |
 |---|---|
-| **Section** | wave 6 |
-| **Category** | web |
-| **Solves** | 148 |
+| **Bagian** | wave 6 |
+| **Kategori** | web |
+| **Jumlah Solve** | 148 |
 
-## Overview
+## Ikhtisar
 
-Bittner & Cross run a link preview tool: `POST /preview` with `{"url": "..."}` makes the server fetch that URL and return the body. The service claims it can only reach external hosts and cannot see any private network. That claim is the whole challenge — the preview endpoint is a server-side request forgery primitive, and the flag sits on the instance metadata service that the filter was supposed to cover.
+Bittner & Cross menjalankan alat pratinjau tautan: `POST /preview` dengan `{"url": "..."}` membuat server mengambil URL itu dan mengembalikan isi URL tersebut. Layanan ini mengklaim hanya dapat menjangkau host eksternal dan tidak dapat melihat jaringan pribadi apa pun. Klaim tersebut adalah keseluruhan tantangannya — titik akhir pratinjau adalah pemalsuan permintaan sisi server yang primitif, dan tandanya berada pada layanan metadata instans yang seharusnya dicakup oleh filter.
 
-## Solve
+## Penyelesaian
 
-A baseline request for `https://example.com` returns a canned page (“Link preview unavailable for external URLs in demo mode”), which is just the demo behaviour. Asking for `http://127.0.0.1/` returns the same canned page: the loopback address is recognised and short-circuited. The filter is a list of forbidden hosts, not a check performed on the resolved address.
+Permintaan dasar untuk `https://example.com` mengembalikan halaman terekam (“Pratinjau tautan tidak tersedia untuk URL eksternal dalam mode demo”), yang hanya merupakan perilaku demo. Meminta `http://127.0.0.1/` mengembalikan halaman kalengan yang sama: alamat loopback dikenali dan dihubung pendek. Filternya adalah daftar host terlarang, bukan pemeriksaan yang dilakukan pada alamat yang diselesaikan.
 
-Link-local space is not on that list. Requesting `http://169.254.169.254/latest/meta-data/` reaches the metadata service instead of the demo stub, and the service answers `404 NOT FOUND` — a real HTTP response, proving the request left the preview worker and hit the metadata endpoint.
+Ruang tautan-lokal tidak ada dalam daftar itu. Permintaan `http://169.254.169.254/latest/meta-data/` menjangkau layanan metadata alih-alih stub demo, dan layanan menjawab `404 NOT FOUND` — respons HTTP nyata, membuktikan permintaan tersebut meninggalkan pekerja pratinjau dan mencapai titik akhir metadata.
 
-The IAM branch is present. `/latest/meta-data/iam/security-credentials/` returns a single role name, `poctf-service-role`, and fetching `/latest/meta-data/iam/security-credentials/poctf-service-role` returns the full credential document with `Code`, `LastUpdated`, `Type`, `AccessKeyId`, `SecretAccessKey`, `Token` and `Expiration`.
+Cabang IAM hadir. `/latest/meta-data/iam/security-credentials/` mengembalikan satu nama peran, `poctf-service-role`, dan mengambil `/latest/meta-data/iam/security-credentials/poctf-service-role` mengembalikan dokumen kredensial lengkap dengan `Code`, `LastUpdated`, `Type`, `AccessKeyId`, `SecretAccessKey`, `Token` dan `Expiration`.
 
-The `AccessKeyId` is not a key at all: it is the flag marker, planted where only the metadata service could hand it out. The surrounding credentials are obviously fake placeholders, so nothing further — no S3 call, no signing — is needed.
+`AccessKeyId` bukanlah kunci sama sekali: ini adalah penanda bendera, ditanam di tempat yang hanya dapat dibagikan oleh layanan metadata. Kredensial di sekitarnya jelas merupakan placeholder palsu, jadi tidak diperlukan apa pun lagi — tidak ada panggilan S3, tidak ada penandatanganan — yang diperlukan.
 
-The flag is ████████████████.
+Flag-nya adalah ████████████████.

@@ -2,43 +2,43 @@
 
 | | |
 |---|---|
-| **Section** | wave 3 |
-| **Category** | steganography |
-| **Solves** | 311 |
+| **Bagian** | wave 3 |
+| **Kategori** | steganography |
+| **Jumlah Solve** | 311 |
 
-## Overview
+## Ikhtisar
 
-The artifact is a 20.16-second, 22050 Hz, 16-bit mono WAV. The recording is mostly background noise interrupted by 65 bursts of a ~175 Hz tone. The bursts are the "rapping"; their durations and the gaps between them form Morse code.
+Artefaknya adalah WAV mono 16-bit 20,16 detik, 22050 Hz. Rekaman sebagian besar berupa kebisingan latar belakang yang diinterupsi oleh 65 semburan nada ~175 Hz. Semburannya adalah "rap"; durasinya dan jarak di antara keduanya membentuk kode Morse.
 
-## Solve
+## Penyelesaian
 
-A 10 ms RMS envelope with a threshold of 1000 isolates the tone bursts from the background (background RMS is around 150). The burst durations fall into two clusters:
+Amplop RMS 10 ms dengan ambang batas 1000 mengisolasi semburan nada dari latar belakang (RMS latar belakang sekitar 150). Durasi burst terbagi dalam dua kelompok:
 
 ```text
 short ~0.085 s  -> dot
 long  ~0.240 s  -> dash
 ```
 
-The gaps fall into two clusters:
+Kesenjangan tersebut terbagi dalam dua kelompok:
 
 ```text
 short ~0.080 s  -> intra-character gap
 long  ~0.240 s  -> inter-character gap
 ```
 
-There are no 7-unit word gaps. Grouping the 65 bursts at the long gaps and mapping the durations gives 16 Morse characters:
+Tidak ada kesenjangan kata 7 unit. Mengelompokkan 65 semburan pada celah yang panjang dan memetakan durasinya menghasilkan 16 karakter Morse:
 
 ```text
 .- ----. -.-. ..-. ..... ----- ...-- . -.-. -.-. --... . ...-- ----. ----- --...
 ```
 
-Decoding the standard Morse table yields:
+Menguraikan tabel Morse standar menghasilkan:
 
 ```text
 ████████████████
 ```
 
-A minimal detector:
+Detektor minimal:
 
 ```python
 import wave
@@ -91,10 +91,10 @@ for ch in chars:
 print(out)
 ```
 
-Output:
+Keluaran:
 
 ```text
 ████████████████
 ```
 
-The recovered nonce is `████████████████`.
+Nonce yang dipulihkan adalah `████████████████`.

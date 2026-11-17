@@ -2,27 +2,27 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | osint |
-| **Solves** | 138 |
+| **Bagian** | wave 5 |
+| **Kategori** | osint |
+| **Jumlah Solve** | 138 |
 
-## Overview
+## Ikhtisar
 
-The subject is Econo Foods, a small-town grocery banner that started as a cooperative of independently owned stores. When a larger distributor moved to buy the brand, each store decided for itself whether to accept, so the same name ended up under several owners, on several domains, across several years. The brief underlines the point: one brand, many stores, and an emphasis on the dates.
+Subjeknya adalah Econo Foods, sebuah toko kelontong di kota kecil yang dimulai sebagai koperasi toko yang dimiliki secara mandiri. Ketika distributor yang lebih besar pindah untuk membeli merek tersebut, masing-masing toko memutuskan sendiri apakah akan menerimanya, sehingga nama yang sama berakhir di bawah beberapa pemilik, di beberapa domain, selama beberapa tahun. Laporan singkatnya menggarisbawahi poinnya: satu merek, banyak toko, dan penekanan pada tanggal.
 
-The question is a single number from 2006: how much time the Ham and Potatoes Au Gratin recipe claimed to save by using frozen ingredients. The page that answers it no longer exists on the live web, so this is an archive problem — and the two variables are the domain and the year.
+Pertanyaannya adalah satu angka dari tahun 2006: berapa banyak waktu yang diklaim dapat dihemat oleh resep Ham dan Kentang Au Gratin dengan menggunakan bahan-bahan beku. Halaman yang menjawabnya sudah tidak ada lagi di web langsung, jadi ini adalah masalah arsip — dan dua variabelnya adalah domain dan tahun.
 
-## Solve
+## Penyelesaian
 
-The banner has lived on more than one domain, and the name has also been used by unrelated companies in other countries, so the first move is to pin the 2006-era site rather than trust a search engine's favourite hit. For the mid-2000s the relevant site is `econofoods.com`.
+Spanduk tersebut telah ada di lebih dari satu domain, dan nama tersebut juga telah digunakan oleh perusahaan yang tidak terkait di negara lain, jadi langkah pertama adalah memasang pin pada situs era 2006 daripada memercayai situs favorit mesin pencari. Untuk pertengahan tahun 2000-an situs yang relevan adalah `econofoods.com`.
 
-Rather than clicking through the Wayback calendar month by month, enumerate what the archive actually holds. The CDX API returns every captured URL for a domain in a date range:
+Daripada mengklik kalender Wayback bulan demi bulan, hitunglah apa yang sebenarnya disimpan dalam arsip tersebut. CDX API mengembalikan setiap URL yang diambil untuk domain dalam rentang tanggal:
 
 ```
 https://web.archive.org/cdx/search/cdx?url=econofoods.com&matchType=domain&from=20060101&to=20061231&fl=original&collapse=urlkey&limit=200
 ```
 
-Among the results, the 2006 site exposes a recipes directory with one file per dish:
+Di antara hasilnya, situs tahun 2006 memperlihatkan direktori resep dengan satu file per hidangan:
 
 ```
 /recipes.html
@@ -32,20 +32,20 @@ Among the results, the 2006 site exposes a recipes directory with one file per d
 /recipes/cass_reuben.htm
 ```
 
-`cass_` is the casserole prefix, and `hamtatoesaugr` is the dish. Browsing the index is a dead end — the same handful of links is served in every capture — but the individual recipe files are separate URLs, and the CDX listing names them directly.
+`cass_` adalah awalan casserole, dan `hamtatoesaugr` adalah hidangannya. Menjelajahi indeks adalah jalan buntu — segelintir tautan yang sama disajikan di setiap pengambilan — tetapi masing-masing file resep adalah URL terpisah, dan daftar CDX menamainya secara langsung.
 
-Fetch the raw capture, without the archive's toolbar:
+Ambil tangkapan mentah, tanpa toolbar arsip:
 
 ```
 https://web.archive.org/web/20060101000000id_/http://www.econofoods.com/recipes/cass_hamtatoesaugr.htm
 ```
 
-The archived page lists the ingredients — diced frozen onions, shredded frozen hash browns, frozen peas and carrots — and closes with the line the challenge is quoting:
+Halaman yang diarsipkan mencantumkan bahan-bahannya — bawang bombay beku yang dipotong dadu, kentang goreng beku yang diparut, kacang polong dan wortel beku — dan ditutup dengan baris yang dikutip dari tantangan tersebut:
 
 ```
 Time Saved Using Frozen Ingredients: 25 Minutes!
 ```
 
-The lesson is that an archive is a URL list, not a website. Calendar browsing only shows what the index page linked to on the days someone happened to crawl it; the CDX API shows everything that was ever captured, including the leaf pages that the index quietly stopped linking.
+Pelajarannya adalah arsip adalah daftar URL, bukan situs web. Penjelajahan kalender hanya menampilkan laman indeks yang tertaut pada hari ketika seseorang merayapinya; CDX API menunjukkan segala sesuatu yang pernah diambil, termasuk halaman daun yang indeksnya diam-diam berhenti ditautkan.
 
-The answer is **25 minutes**.
+Jawabannya adalah **25 menit**.

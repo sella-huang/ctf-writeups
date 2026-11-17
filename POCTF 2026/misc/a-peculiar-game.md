@@ -2,44 +2,44 @@
 
 | | |
 |---|---|
-| **Section** | wave 4 |
-| **Category** | misc |
-| **Solves** | 215 |
+| **Bagian** | wave 4 |
+| **Kategori** | misc |
+| **Jumlah Solve** | 215 |
 
-## Overview
+## Ikhtisar
 
-The challenge hands out a per-team PDF dressed as an 1887 chess column, *The Vienna Correspondence Monthly*. It reports a short correspondence game between "Signor Marchetti" and "Dr. Whitmore", annotated move by move, concluding 1/2-1/2. The prompt insists that something about the moves is very peculiar and that the game "isn't quite about chess". The objective is a 16-hex nonce.
+Tantangan ini membagikan PDF per tim dengan tampilan kolom catur tahun 1887, *The Vienna Correspondence Monthly*. Ini melaporkan permainan korespondensi singkat antara "Signor Marchetti" dan "Dr. Whitmore", diberi penjelasan langkah demi langkah, menyimpulkan 1/2-1/2. Prompt tersebut menegaskan bahwa ada sesuatu tentang gerakan tersebut yang sangat aneh dan bahwa permainan tersebut "tidak sepenuhnya tentang catur". Tujuannya adalah nonce 16-hex.
 
-## Solve
+## Penyelesaian
 
-The game, transcribed from the PDF in PGN order, is:
+Permainan yang ditranskrip dari PDF dalam urutan PGN adalah:
 
 ```
 1. b4   Nxb3    2. Nxd3  h4      3. Nxe3  Nxg3    4. Nxg3  Nxf3
 5. Nxc3 Nxb3    6. c4    Nxa3    7. Nxg3  Nxg3    8. f4    f4
 ```
 
-Two properties stand out immediately.
+Dua properti langsung menonjol.
 
-First, the game is not legal chess. Black cannot play `1...Nxb3` on the first move, both sides "capture" on `g3`, and both play `f4` in the last move. The notation is being used as a carrier, not as a game.
+Pertama, permainan catur bukanlah catur yang sah. Hitam tidak bisa memainkan `1...Nxb3` pada langkah pertama, kedua belah pihak "menangkap" pada `g3`, dan keduanya memainkan `f4` pada langkah terakhir. Notasi tersebut digunakan sebagai pembawa, bukan sebagai permainan.
 
-Second, and decisively, every single destination square lies on rank 3 or rank 4. The sixteen half-moves visit only the band of squares `a3`–`h4`, which contains exactly sixteen squares. Sixteen squares for a 16-hex nonce means each destination square is a hex digit.
+Kedua, dan yang menentukan, setiap kotak tujuan terletak pada peringkat 3 atau peringkat 4. Enam belas setengah gerakan hanya mengunjungi pita kotak `a3`–`h4`, yang berisi tepat enam belas kotak. Enam belas kotak untuk nonce 16 hex berarti setiap kotak tujuan adalah digit hex.
 
-The natural indexing of that 2×8 band is by file letter and then by rank, i.e. the alphabetical order of the square names:
+Pengindeksan alami dari pita 2x8 tersebut adalah berdasarkan huruf file dan kemudian berdasarkan peringkat, yaitu urutan abjad dari nama persegi:
 
 ```
 a3=0  a4=1  b3=2  b4=3  c3=4  c4=5  d3=6  d4=7
 e3=8  e4=9  f3=a  f4=b  g3=c  g4=d  h3=e  h4=f
 ```
 
-so that a move like `b4` maps to `1*2 + (4-3) = 3`, while `f4` maps to `5*2 + (4-3) = b`.
+sehingga perpindahan seperti `b4` dipetakan ke `1*2 + (4-3) = 3`, sedangkan `f4` dipetakan ke `5*2 + (4-3) = b`.
 
-Applying this table, in game order, to the sixteen destination squares
+Menerapkan tabel ini, dalam urutan permainan, ke enam belas kotak tujuan
 
 ```
 b4  b3  d3  h4  e3  g3  g3  f3  c3  b3  c4  a3  g3  g3  f4  f4
 ```
 
-produces the sixteen nibbles of the nonce. Submitting the raw nonce to the challenge endpoint was accepted ("The game concludes."), which confirms the reading: the players were not playing chess at all, they were spelling out a hexadecimal string on the only sixteen squares the game ever touched.
+menghasilkan enam belas camilan nonce. Mengirimkan nonce mentah ke titik akhir tantangan diterima ("Permainan selesai."), yang mengonfirmasi pembacaan: para pemain tidak bermain catur sama sekali, mereka mengeja string heksadesimal pada enam belas kotak yang pernah disentuh permainan.
 
-The 16-hex nonce is `████████████████`.
+Nonce 16-hex adalah `████████████████`.

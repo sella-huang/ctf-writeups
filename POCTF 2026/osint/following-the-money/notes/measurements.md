@@ -1,55 +1,55 @@
 # Measurements
 
-All values used in the final calculation. The flag is not included.
+Semua nilai yang digunakan dalam perhitungan akhir. Flag tidak termasuk.
 
-## Artifact
+## Artefak
 
-- Archive: `following-the-money.zip`
+- Arsip: `following-the-money.zip`
 - SHA-256: `864cbc23a8756ed94d793f6f81259b47857b71d16268ca3ad0d2ca7f9cd6b90a`
-- Contents: 30 RGBA PNG fragments with torn alpha masks.
+- Isi: 30 fragmen RGBA PNG dengan topeng alpha robek.
 
-## Bill
+## Tagihan
 
 - Serial: `E10093751B`
-- Series: 2017
-- Signatory: Jovita Carranza
-- Federal Reserve district: E (Richmond)
-- Serial locations: top right and bottom left.
+- Seri: 2017
+- Penandatangan: Jovita Carranza
+- Distrik Federal Reserve: E (Richmond)
+- Lokasi serial: kanan atas dan kiri bawah.
 
-## Where's George
+## Di Mana George
 
-- Challenge token: `b:Fuzhs8rJ7u`
-- Report URL: `https://www.wheresgeorge.com/report.php?b=Fuzhs8rJ7u`
-- Relevant content: the report note
-- Blog URL: `https://pointeroverflowctf.com/challenges/following-the-money/astroblog/`
+- Token tantangan: `b:Fuzhs8rJ7u`
+- URL Laporan: `https://www.wheresgeorge.com/report.php?b=Fuzhs8rJ7u`
+- Konten yang relevan: catatan laporan
+- URL Blog: `https://pointeroverflowctf.com/challenges/following-the-money/astroblog/`
 
 ## Blog
 
-- Post: #137, "The viaduct, finally clear"
-- Capture UTC: `2024-10-12T21:18:38Z`
-- Image size: 1080 x 1620 px
-- Vertical FOV: 45.9°
-- Pixel scale: `45.9 / 1620 = 0.028333°/px`
-- Horizon row: `y = 1443`
-- EXIF timestamp on the edited image: `2024:10:12 22:44:26` (not used)
+- Postingan: #137, "Jembatan, akhirnya bersih"
+- Tangkap UTC: `2024-10-12T21:18:38Z`
+- Ukuran gambar: 1080 x 1620 piksel
+- FOV Vertikal: 45,9°
+- Skala piksel: `45.9 / 1620 = 0.028333°/px`
+- Baris cakrawala: `y = 1443`
+- Stempel waktu EXIF pada gambar yang diedit: `2024:10:12 22:44:26` (tidak digunakan)
 
-## Astrometry
+## Astrometri
 
-- Solver: Astrometry.net
+- Pemecah: Astrometri.net
 - CRVAL1 (RA): `9.5355366203°`
-- CRVAL2 (Dec): `31.2660622861°`
+- CRVAL2 (Des): `31.2660622861°`
 - CRPIX1: `63.2815876007`
 - CRPIX2: `660.067301432`
 
-## Derived
+## Hasil Perhitungan
 
-- Altitude: `(1443 - 660.067301432) * 45.9 / 1620 = 22.1831°`
-- GST at capture: `341.595636°`
-- Longitude: `GST - RA = 341.595636 - 9.535537 = 332.060099° -> -27.939901°`
+- Ketinggian: `(1443 - 660.067301432) * 45.9 / 1620 = 22.1831°`
+- GST saat pengambilan: `341.595636°`
+- Bujur: `GST - RA = 341.595636 - 9.535537 = 332.060099° -> -27.939901°`
 
-## Candidate viaducts
+## Kandidat Viaduk
 
-| Candidate | Latitude | Longitude | Verdict |
+| Kandidat | Lintang | Bujur | Hasil |
 |---|---:|---:|---|
 | Ribblehead | 54.2104 | -2.3702 | ~11 km north of the target latitude |
 | Clapham / Wenning | 54.1041 | -2.4085 | wrong arch count and curve |

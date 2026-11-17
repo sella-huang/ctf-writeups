@@ -2,26 +2,26 @@
 
 | | |
 |---|---|
-| **Section** | wave 6 |
-| **Category** | reverse engineering |
-| **Solves** | 161 |
+| **Bagian** | wave 6 |
+| **Kategori** | reverse engineering |
+| **Jumlah Solve** | 161 |
 
-## Overview
+## Ikhtisar
 
-The handout is a stripped x86-64 Linux ELF (`oxidized_archive`) plus a README that promises "source and build instructions" but ships neither. The prompt says the utility reads no input, recovers an archive and prints it, yet prints nothing, because the archive and its key are baked into the binary and the author's crypto is not crypto.
+Handoutnya adalah Linux ELF x86-64 (`oxidized_archive`) yang dilucuti ditambah README yang menjanjikan "instruksi sumber dan pembuatan" tetapi tidak mengirimkan keduanya. Prompt mengatakan utilitas tidak membaca masukan, memulihkan arsip dan mencetaknya, namun tidak mencetak apa pun, karena arsip dan kuncinya dimasukkan ke dalam biner dan kripto pembuatnya bukanlah kripto.
 
-Running it confirms the description: no output, exit status 1. Static analysis of the Rust binary is enough to recover both constants and to reimplement the toy cipher in a dozen lines of Python.
+Menjalankannya akan mengonfirmasi deskripsi: tidak ada keluaran, status keluar 1. Analisis statis biner Rust sudah cukup untuk memulihkan kedua konstanta dan mengimplementasikan kembali sandi mainan dalam selusin baris Python.
 
-## Solve
+## Penyelesaian
 
-Because the binary is stripped, function boundaries come from the `.eh_frame` FDE list rather than the symbol table. The user code sits at the very start of `.text`: a single FDE covers `0x15791`-`0x16261`, and that range is the program's `main`.
+Karena biner dihilangkan, batasan fungsi berasal dari daftar FDE `.eh_frame` dan bukan dari tabel simbol. Kode pengguna berada di awal `.text`: satu FDE mencakup `0x15791`-`0x16261`, dan rentang tersebut adalah `main` program.
 
-Reading it top to bottom:
+Membacanya dari atas ke bawah:
 
-1. `main` calls `std::env::args()` and branches on the argument count. With exactly one extra argument it computes `FNV-1a-64` of `argv[1]` (`offset basis 0xcbf29ce484222325`, `prime 0x100000001b3`) and compares the digest against a value materialised through a GOT slot. A mismatch prints `archive sealed. supplied token does not match.` and exits. The archive is never touched, which is why the program is silent when run normally.
-2. Two constant blocks are then copied out of `.rodata` with `movups`: 128 bytes of "archive" at `0x5480` and a 24-byte, NUL-terminated key at `0x5500`.
-3. The key is fed through the same FNV-1a-64 routine to produce a 64-bit seed.
-4. That seed drives an LCG with PCG32 constants:
+1. `main` memanggil `std::env::args()` dan bercabang pada jumlah argumen. Dengan tepat satu argumen tambahan, ia menghitung `FNV-1a-64` dari `argv[1]` (`offset basis 0xcbf29ce484222325`, `prime 0x100000001b3`) dan membandingkan intisari dengan nilai yang diwujudkan melalui slot GOT. Ketidakcocokan mencetak `archive sealed. supplied token does not match.` dan keluar. Arsipnya tidak pernah disentuh, itulah sebabnya program tidak bersuara saat dijalankan secara normal.
+2. Dua blok konstan kemudian disalin dari `.rodata` dengan `movups`: 128 byte "arsip" di `0x5480` dan kunci 24-byte yang diakhiri NUL di `0x5500`.
+3. Kunci dimasukkan melalui rutinitas FNV-1a-64 yang sama untuk menghasilkan benih 64-bit.
+4. Seed tersebut menggerakkan LCG dengan konstanta PCG32:
 
 ```text
 state = seed
@@ -29,9 +29,9 @@ state = state * 0x5851f42d4c957f2d + 0x14057b7ef767814f   (mod 2^64)
 keystream_byte = (state >> 33) & 0xff
 ```
 
-   The compiler has vectorised the generator, then XORs 128 archive bytes against the 128 keystream bytes with SSE (`xorps` on 16-byte lanes) plus a scalar tail.
-5. The result is scanned for the first `0x00` (the `str::from_utf8`/C-string length search at `0x16120`), and that slice is handed to `miniz_oxide`.
+   Kompiler telah memvektorisasi generator, kemudian melakukan XOR 128 byte arsip terhadap 128 byte keystream dengan SSE (`xorps` pada jalur 16-byte) ditambah ekor skalar.
+5. Hasilnya dipindai untuk `0x00` pertama (pencarian panjang string `str::from_utf8`/C di `0x16120`), dan potongan itu diserahkan ke `miniz_oxide`.
 
-The last step is a decoy: decrypting the 128 bytes in Python with the reimplemented seed and LCG immediately yields printable ASCII beginning with `POCTF{`, so no decompression is required and the buffer already is the plaintext the utility was supposed to print.
+Langkah terakhir adalah umpan: mendekripsi 128 byte dengan Python dengan seed yang diimplementasikan ulang dan LCG segera menghasilkan ASCII yang dapat dicetak dimulai dengan `POCTF{`, jadi tidak diperlukan dekompresi dan buffer sudah menjadi teks biasa yang seharusnya dicetak oleh utilitas.
 
-The plaintext, and therefore the flag, is ████████████████.
+Teks biasa dan flag-nya adalah ████████████████.

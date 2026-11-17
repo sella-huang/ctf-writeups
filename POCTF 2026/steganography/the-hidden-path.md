@@ -2,23 +2,23 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | steganography |
-| **Solves** | 160 |
+| **Bagian** | wave 5 |
+| **Kategori** | steganography |
+| **Jumlah Solve** | 160 |
 
-## Overview
+## Ikhtisar
 
-The artifact is a one-page type specimen, `specimen.pdf`, with sixteen glyph outlines. Each glyph is a house-like shape: a rectangle with a roof. The right vertical wall ends either above or below the roof apex. Those two states are the only difference between the glyphs, and they encode one bit each. Sixteen bits make a four-digit hexadecimal nonce.
+Artefak tersebut adalah spesimen tipe satu halaman, `specimen.pdf`, dengan enam belas garis mesin terbang. Setiap mesin terbang berbentuk seperti rumah: persegi panjang dengan atap. Dinding vertikal kanan berakhir di atas atau di bawah puncak atap. Kedua keadaan tersebut adalah satu-satunya perbedaan antara mesin terbang, dan masing-masing mengkodekan satu bit. Enam belas bit menghasilkan nonce heksadesimal empat digit.
 
-## Solve
+## Penyelesaian
 
-Extract the glyph paths from the PDF content stream. Each path has the form
+Ekstrak jalur mesin terbang dari aliran konten PDF. Setiap jalur memiliki bentuknya
 
 ```text
 n x0 y0 m x1 y1 l x2 y2 l x3 y3 l x4 y4 l h
 ```
 
-The second `l` point is the top of the right wall, and the third `l` point is the roof apex. In PDF coordinates the y-axis points up, so a right-wall top above the apex is a 0 and one below it is a 1. Read the glyphs in row-major order.
+Titik `l` kedua adalah puncak tembok kanan, dan titik `l` ketiga adalah puncak atap. Dalam PDF, koordinat titik sumbu y mengarah ke atas, jadi dinding kanan atas di atas puncak adalah 0 dan satu di bawahnya adalah 1. Bacalah mesin terbang dalam urutan baris-utama.
 
 ```python
 import re, zlib, base64
@@ -40,16 +40,16 @@ bits = ''.join('0' if float(p[5]) > float(p[7]) else '1' for p in paths)
 print(bits, f'{int(bits, 2):04X}')
 ```
 
-The sixteen comparisons produce the bit string
+Enam belas perbandingan menghasilkan bit string
 
 ```text
 ████████████████
 ```
 
-The page accepts the raw nonce, so no `POCTF{...}` wrapper is needed:
+Halaman ini menerima nonce mentah, jadi tidak diperlukan pembungkus `POCTF{...}`:
 
 ```text
 ████████████████
 ```
 
-The specimen encodes the raw nonce ████████████████.
+Spesimen mengkodekan nonce mentah ████████████████.

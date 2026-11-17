@@ -2,19 +2,19 @@
 
 | | |
 |---|---|
-| **Section** | wave 6 |
-| **Category** | forensics |
-| **Solves** | 183 |
+| **Bagian** | wave 6 |
+| **Kategori** | forensics |
+| **Jumlah Solve** | 183 |
 
-## Overview
+## Ikhtisar
 
-The recovered Threshold data directory contains `threshold.db`, `config.json`, an `attachments/` folder, and two loose text files. The SQLite schema is small: `users`, `devices`, `sessions`, `threads`, `thread_participants`, `messages`, `message_edits`, `reactions`, and `attachments`. There are 58 messages across ten threads, 21 device rows, and 40 sessions; `message_edits` and `reactions` are empty. The important table is `messages`, because every row keeps both `sender_id` — the account — and `sender_device_id`, the client that actually sent it. The prompt describes exactly a mismatch between those two columns: the messages look like Elena's account, but not like one of Elena's devices.
+Direktori data Threshold yang dipulihkan berisi `threshold.db`, `config.json`, folder `attachments/`, dan dua file teks lepas. Skema SQLite kecil: `users`, `devices`, `sessions`, `threads`, `thread_participants`, `messages`, `message_edits`, `reactions`, dan `attachments`. Ada 58 pesan di sepuluh thread, 21 baris perangkat, dan 40 sesi; `message_edits` dan `reactions` kosong. Tabel yang penting adalah `messages`, karena setiap baris menyimpan `sender_id` — akun — dan `sender_device_id`, klien yang sebenarnya mengirimkannya. Perintah tersebut menjelaskan dengan tepat ketidakcocokan antara dua kolom tersebut: pesannya terlihat seperti akun Elena, namun tidak seperti salah satu perangkat Elena.
 
-One clock issue has to be settled before any query. The prompt uses `2026-06-28 22:47`, but the database's `sent_at` values are 2024 epochs. The range is `1719080400`–`1719962400`, or `2024-06-22 18:20:00`–`2024-07-02 23:20:00` UTC. A literal `WHERE sent_at >= 1782686820` returns zero rows. The useful boundary is not the narrative timestamp; it is the last message from Elena's original device, after which the account's next messages come from a different client.
+Masalah satu jam harus diselesaikan sebelum pertanyaan apa pun. Perintahnya menggunakan `2026-06-28 22:47`, tetapi nilai `sent_at` database adalah periode 2024. Rentangnya adalah `1719080400`–`1719962400`, atau `2024-06-22 18:20:00`–`2024-07-02 23:20:00` UTC. `WHERE sent_at >= 1782686820` literal mengembalikan nol baris. Batasan yang berguna bukanlah stempel waktu naratif; itu adalah pesan terakhir dari perangkat asli Elena, setelah itu pesan akun berikutnya datang dari klien yang berbeda.
 
-## Solve
+## Penyelesaian
 
-Start with the device table for `u_elena` / `@e.marchetti`:
+Mulailah dengan tabel perangkat untuk `u_elena` / `@e.marchetti`:
 
 ```bash
 sqlite3 threshold.db <<'SQL'
@@ -30,7 +30,7 @@ ORDER BY registered_at;
 SQL
 ```
 
-The result is four rows:
+Hasilnya adalah empat baris:
 
 | device id | device name | registered (UTC) | last seen (UTC) | active |
 |---|---|---|---|---|
@@ -39,9 +39,9 @@ The result is four rows:
 | `████████████████` | Elena's MacBook | 2024-07-02 18:21:00 | 2024-07-03 02:00:00 | 1 |
 | `DWA2CYMFMTOEFMWK` | Elena's iPad | 2024-07-03 09:46:40 | 2024-06-27 18:20:00 | 0 |
 
-Three rows have activity before the incident: the MacBook Pro, the iPhone, and the iPad, whose `last_seen_at` is `2024-06-27 18:20:00`. The iPad's `registered_at` is later than its `last_seen_at`, which is impossible for a genuinely new device; it is inactive and, as shown below, has no sessions and no messages. That anomaly is the decoy. The fourth row, `████████████████`, has no pre-incident activity: it is created at `2024-07-02 18:21:00`, after Elena's last genuine message, and it is the only device that sends messages after that point.
+Tiga baris memiliki aktivitas sebelum kejadian: MacBook Pro, iPhone, dan iPad, yang `last_seen_at`-nya adalah `2024-06-27 18:20:00`. `registered_at` iPad lebih baru dari `last_seen_at`, yang tidak mungkin dilakukan untuk perangkat yang benar-benar baru; itu tidak aktif dan, seperti yang ditunjukkan di bawah, tidak memiliki sesi dan pesan. Anomali itu adalah umpannya. Baris keempat, `████████████████`, tidak memiliki aktivitas sebelum insiden: baris tersebut dibuat di `2024-07-02 18:21:00`, setelah pesan asli terakhir Elena, dan merupakan satu-satunya perangkat yang mengirim pesan setelah titik tersebut.
 
-Group Elena's messages by sending device:
+Kelompokkan pesan Elena berdasarkan perangkat pengirim:
 
 ```sql
 SELECT sender_device_id, COUNT(*) AS n,
@@ -52,24 +52,22 @@ WHERE sender_id = 'u_elena'
 GROUP BY sender_device_id;
 ```
 
-The output is only two devices:
+Outputnya hanya dua perangkat:
 
 ```text
 6XQDEDUHPWFMNMVE  20  2024-06-22 19:20:00  2024-07-02 18:00:01
 ████████████████   3  2024-07-02 19:20:00  2024-07-02 23:20:00
 ```
 
-The MacBook Pro sent 20 messages and stopped at `2024-07-02 18:00:01`. That last message is `m_f4vcbsc2yesi`, the attachment message for `20260628_ectograph_transcript.txt`. The next three messages from Elena's account are all from `████████████████`:
+MacBook Pro mengirim 20 pesan dan berhenti di `2024-07-02 18:00:01`. Pesan terakhir itu adalah `m_f4vcbsc2yesi`, pesan lampiran untuk `20260628_ectograph_transcript.txt`. Tiga pesan berikutnya dari akun Elena semuanya dari `████████████████`:
 
 | sent (UTC) | thread | body | read at |
 |---|---|---|---|
 | 2024-07-02 19:20:00 | `th_delacroix` | "You're right. Deleting. Please stop contacting me. I'm dropping the research. Delete everything I sent you." | `NULL` |
 | 2024-07-02 20:20:00 | `th_rennick` | "Aldous, I've thought about it. I'm withdrawing from the program effective immediately. I'll be unreachable for a few weeks. Please don't try to contact me." | `NULL` |
-| 2024-07-02 23:20:00 | `th_renata` | "Ren I'm going up to Marion's for the weekend. Research overnight, phone off. Don't worry." | `NULL` |
+| 2024-07-02 23:20:00 | `th_renata` | "Ren I'm going up to Marion's for the weekend. Research overnight, phone off. Don't worry." | `NULL` |Ini adalah tiga pesan yang dijelaskan oleh prompt. Mereka dikoordinasikan di tiga thread berbeda, semuanya dalam waktu empat jam, dan semuanya dari perangkat non-asli yang sama. Isinya juga konsisten dengan upaya untuk menutup penyelidikan: pesan Delacroix menghancurkan rangkaian transkrip, pesan Rennick menjelaskan penarikan mendadak, dan pesan Renata memberikan lokasi palsu dan alasan untuk tidak dapat dijangkau. Nilai `read_at` adalah `NULL`; pesan asli telah dibaca, jadi ketidakhadirannya merupakan inkonsistensi kecil lainnya.
 
-These are the three messages the prompt describes. They are coordinated across three different threads, all within four hours, and all from the same non-original device. The content is also consistent with an attempt to close the investigation: the Delacroix message destroys the transcript thread, the Rennick message explains an abrupt withdrawal, and the Renata message gives a false location and a reason to be unreachable. The `read_at` values are `NULL`; the genuine messages have read receipts, so the absence is another small inconsistency.
-
-The device row and its sessions explain why `████████████████` is the pen:
+Baris perangkat dan sesinya menjelaskan mengapa `████████████████` adalah pena:
 
 ```sql
 SELECT id, device_name, device_fingerprint,
@@ -83,27 +81,25 @@ FROM sessions WHERE device_id = '███████████████�
 ORDER BY started_at;
 ```
 
-The device is named "Elena's MacBook", fingerprint `MacBookAir-M2 macOS 14.5`, registered at `2024-07-02 18:21:00` and last seen at `2024-07-03 02:00:00`. Its registration is about 21 minutes after the last message from `6XQDEDUHPWFMNMVE`, and about 59 minutes before the first forged message. That is the enrollment window. Its sessions are:
+Perangkat tersebut diberi nama "Elena's MacBook", sidik jari `MacBookAir-M2 macOS 14.5`, terdaftar di `2024-07-02 18:21:00` dan terakhir terlihat di `2024-07-03 02:00:00`. Pendaftarannya sekitar 21 menit setelah pesan terakhir dari `6XQDEDUHPWFMNMVE`, dan sekitar 59 menit sebelum pesan palsu pertama. Itu adalah jendela pendaftaran. Sesinya adalah:
 
 ```text
 2024-07-02 18:21:00   203.0.113.113
 2024-07-05 18:21:00   203.0.113.66
 ```
 
-The network evidence is unusually clean: 38 of the 40 sessions in the database use `192.0.2.x`, while the two sessions for `████████████████` use `203.0.113.x`. The two documentation ranges — TEST-NET-1 and TEST-NET-3 — were deliberately kept apart. The device was enrolled, immediately opened a session from the second range, sent the three messages, and was seen again three days later from the same range. The second session is after the database's last message, so the device remained active after the forgery.
+Bukti jaringan sangat bersih: 38 dari 40 sesi dalam database menggunakan `192.0.2.x`, sedangkan dua sesi untuk `████████████████` menggunakan `203.0.113.x`. Kedua rentang dokumentasi — TEST-NET-1 dan TEST-NET-3 — sengaja dipisahkan. Perangkat telah didaftarkan, segera membuka sesi dari rentang kedua, mengirim tiga pesan, dan terlihat lagi tiga hari kemudian dari rentang yang sama. Sesi kedua adalah setelah pesan terakhir database, sehingga perangkat tetap aktif setelah pemalsuan.
 
-The iPad is the main dead end. `DWA2CYMFMTOEFMWK` has `last_seen_at = 2024-06-27 18:20:00` but `registered_at = 2024-07-03 09:46:40`, is marked `is_active = 0`, and has no sessions or messages:
+IPad adalah jalan buntu utama. `DWA2CYMFMTOEFMWK` memiliki `last_seen_at = 2024-06-27 18:20:00` tetapi `registered_at = 2024-07-03 09:46:40`, ditandai `is_active = 0`, dan tidak memiliki sesi atau pesan:
 
 ```sql
 SELECT COUNT(*) FROM messages WHERE sender_device_id = 'DWA2CYMFMTOEFMWK'; -- 0
 SELECT COUNT(*) FROM sessions WHERE device_id = 'DWA2CYMFMTOEFMWK';        -- 0
 ```
 
-If the only criterion is "a device that shouldn't exist", the iPad looks like the answer because its timestamps are impossible. It is not: it authored none of the three messages. The decisive column is `messages.sender_device_id`, not `devices.registered_at`. The iPad is a decoy, and submitting its ID returns `Incorrect`.
+Jika satu-satunya kriteria adalah “perangkat yang seharusnya tidak ada”, iPad sepertinya jawabannya karena stempel waktunya tidak mungkin. Bukan: ia tidak menulis satu pun dari ketiga pesan tersebut. Kolom yang menentukan adalah `messages.sender_device_id`, bukan `devices.registered_at`. IPad adalah umpan, dan mengirimkan ID-nya akan mengembalikan `Incorrect`.
 
-The attachments and loose text files are also decoys. Only one attachment is actually referenced by a message: `att_ecto_cpvzcjyj` on `m_f4vcbsc2yesi`, the ectograph transcript. The other four — `20260615_rennick_deadline.png`, `20260620_redoubt_receipt.jpg`, `20260625_spr_confirmation.pdf`, and `20260626_yee_subtweet.png` — have `message_id = NULL`. They are orphaned flavor files, not part of the message graph. Their `content_hash` values are 16 characters and look base32-like, but they are content hashes, not device IDs; the same is true of the 16-character session IDs. `unaccounted_transmission.txt` is an out-of-band ASCII fragment and contains no device identifier.
-
-The transcript is the narrative hint, not the payload:
+Lampiran dan file teks yang lepas juga merupakan umpan. Hanya satu lampiran yang benar-benar direferensikan oleh sebuah pesan: `att_ecto_cpvzcjyj` pada `m_f4vcbsc2yesi`, transkrip ektograf. Empat lainnya — `20260615_rennick_deadline.png`, `20260620_redoubt_receipt.jpg`, `20260625_spr_confirmation.pdf`, dan `20260626_yee_subtweet.png` — memiliki `message_id = NULL`. Itu adalah file rasa yatim piatu, bukan bagian dari grafik pesan. Nilai `content_hash`-nya terdiri dari 16 karakter dan terlihat seperti base32, namun merupakan hash konten, bukan ID perangkat; hal yang sama juga berlaku untuk ID sesi 16 karakter. `unaccounted_transmission.txt` adalah fragmen ASCII out-of-band dan tidak berisi pengenal perangkat.Transkripnya adalah petunjuk naratif, bukan muatannya:
 
 ```text
 The hand is not the medium's.
@@ -112,16 +108,16 @@ The pen has never left the drawer.
 The words were spoken in another room.
 ```
 
-That is the same observation the database makes: the hand typing is not Elena's, the pen is not one of her devices, and the words came from another room. The `README.txt` states it more directly: "Not everything you'll read here was said by whom it looks like."
+Itu adalah pengamatan yang sama yang dilakukan oleh database: pengetikan tangan bukan milik Elena, pena bukanlah salah satu perangkatnya, dan kata-kata itu berasal dari ruangan lain. `README.txt` menyatakannya secara lebih langsung: "Tidak semua yang Anda baca di sini dikatakan oleh siapa yang melihatnya."
 
-The timestamp cutoff is another dead end. Querying the literal 2026 epoch returns nothing, and querying the 2024-06-28 22:47 epoch returns many genuine messages from `6XQDEDUHPWFMNMVE`; it does not isolate the three forged ones. The reliable pivot is the device switch: after the last `6XQDEDUHPWFMNMVE` message, the account has exactly three messages, and all three carry the same new `sender_device_id`.
+Pemutusan stempel waktu adalah jalan buntu lainnya. Mengkueri zaman literal 2026 tidak menghasilkan apa-apa, dan menanyakan zaman 28-06-2024 22:47 mengembalikan banyak pesan asli dari `6XQDEDUHPWFMNMVE`; itu tidak mengisolasi ketiga yang palsu. Poros yang andal adalah peralihan perangkat: setelah pesan `6XQDEDUHPWFMNMVE` terakhir, akun tersebut memiliki tepat tiga pesan, dan ketiganya membawa `sender_device_id` baru yang sama.
 
-The rogue device is `████████████████`. It is 16 characters and valid base32. On the artifact page, submitting the raw token or `POCTF{████████████████}` returns:
+Perangkat nakal tersebut adalah `████████████████`. Ini adalah 16 karakter dan base32 yang valid. Di halaman artefak, mengirimkan token mentah atau `POCTF{████████████████}` akan mengembalikan:
 
 ```json
 {"correct":true,"message":"Correct."}
 ```
 
-The full marker is `POCTF{████…}`.
+Penanda lengkapnya adalah `POCTF{████…}`.
 
-The pen that was not the medium's is `████████████████`, and the flag is `POCTF{████…}`.
+Pena yang bukan mediumnya adalah `████████████████`, dan flag-nya adalah `POCTF{████…}`.

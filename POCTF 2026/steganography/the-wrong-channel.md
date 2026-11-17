@@ -2,40 +2,40 @@
 
 | | |
 |---|---|
-| **Section** | wave 6 |
-| **Category** | steganography |
-| **Solves** | 161 |
+| **Bagian** | wave 6 |
+| **Kategori** | steganography |
+| **Jumlah Solve** | 161 |
 
-## Overview
+## Ikhtisar
 
-The artifact is a 128×96, 8-bit RGBA PNG. The red, green, and blue channels have high-entropy low-order bits, so a standard RGB LSB scan produces noisy candidates and false positives. The real payload is not in those bits and not in an ancillary PNG chunk: the file contains only `IHDR`, one `IDAT`, and `IEND`. The payload is in the alpha channel.
+Artefaknya adalah PNG RGBA 8-bit 128×96. Saluran merah, hijau, dan biru memiliki bit orde rendah dengan entropi tinggi, sehingga pemindaian RGB LSB standar menghasilkan kandidat yang berisik dan positif palsu. Muatan sebenarnya tidak ada dalam bit tersebut dan tidak dalam potongan PNG tambahan: file hanya berisi `IHDR`, satu `IDAT`, dan `IEND`. Payloadnya ada di saluran alfa.
 
-## Solve
+## Penyelesaian
 
-A chunk walk shows no `tEXt`, `zTXt`, or `iTXt` metadata, and the decompressed image data is exactly the expected size: `128 * 96 * 4 + 96` filter bytes. The RGB LSBs are the decoy.
+Jalan potongan tidak menunjukkan metadata `tEXt`, `zTXt`, atau `iTXt`, dan data gambar yang didekompresi persis dengan ukuran yang diharapkan: byte filter `128 * 96 * 4 + 96`. LSB RGB adalah umpannya.
 
-The alpha channel is constant at 255 except for eight pixels at the start of the image:
+Saluran alfa konstan pada 255 kecuali delapan piksel di awal gambar:
 
 ```text
 (0,0) a=239   (0,1) a=222   (0,2) a=125   (0,3) a=118
 (0,4) a=4     (0,5) a=204   (0,6) a=77    (0,7) a=112
 ```
 
-Read in raster order, those alpha values are the bytes:
+Baca dalam urutan raster, nilai alfa tersebut adalah byte:
 
 ```text
 ef de 7d 76 04 cc 4d 70
 ```
 
-This is the 8-byte nonce, or 16 hex characters:
+Ini adalah nonce 8-byte, atau 16 karakter hex:
 
 ```text
 ████████████████
 ```
 
-The values are the alpha bytes themselves, not their least significant bits, which is why an RGB-only LSB scan misses them.
+Nilainya adalah byte alfa itu sendiri, bukan bit paling tidak signifikan, itulah sebabnya pemindaian LSB khusus RGB tidak dapat menangkap nilai tersebut.
 
-A minimal check:
+Pemeriksaan minimal:
 
 ```python
 from PIL import Image
@@ -52,7 +52,7 @@ raw = bytes(
 print(raw.hex())
 ```
 
-Output:
+Keluaran:
 
 ```text
 ████████████████

@@ -2,49 +2,49 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | crypto |
-| **Solves** | 487 |
+| **Bagian** | wave 2 |
+| **Kategori** | crypto |
+| **Jumlah Solve** | 487 |
 
-## Overview
+## Ringkasanan
 
-The challenge provided two artefacts: a transcript from a mechanical tic-tac-toe apparatus, and a block of ciphertext. The transcript listed the apparatus's moves by board coordinate rather than by turn number, so the first problem was ordering them. The second problem was the alphabet: the ciphertext contained punctuation and braces, so it could not be a Vigenère over A–Z.
+Tantangan tersebut memberikan dua artefak: transkrip dari peralatan tic-tac-toe mekanis, dan satu blok teks tersandi. Transkrip tersebut mencantumkan pergerakan peralatan berdasarkan koordinat papan, bukan berdasarkan nomor giliran, jadi masalah pertama adalah mengurutkannya. Masalah kedua adalah alfabet: ciphertext berisi tanda baca dan kurung kurawal, sehingga tidak bisa menjadi Vigenère di atas A–Z.
 
-## Solve
+## Penyelesaian
 
-The apparatus board is a 3×3 grid labelled A–I. Sorting the move table by its turn index yields the cell sequence:
+Papan peralatan berbentuk kotak 3×3 berlabel A – I. Mengurutkan tabel perpindahan berdasarkan indeks gilirannya menghasilkan urutan sel:
 
-    A  G  E  B  I
+A G E B I
 
-That sequence is the key. With A = 0 … Z = 25 it maps to the shifts 0, 6, 4, 1, 8.
+Urutan itu adalah kuncinya. Dengan A = 0 … Z = 25 dipetakan ke pergeseran 0, 6, 4, 1, 8.
 
-A standard Vigenère table covers only 26 letters, but the ciphertext bytes span the full printable ASCII range (32–126, 95 symbols). The cipher is the same additive scheme over that alphabet:
+Tabel Vigenère standar hanya mencakup 26 huruf, tetapi byte teks tersandi mencakup seluruh rentang ASCII yang dapat dicetak (32–126, 95 simbol). Sandinya adalah skema aditif yang sama pada alfabet itu:
 
-    p_i = 32 + ((c_i - 32) - (k_i - 65)) mod 95
+p_i = 32 + ((c_i - 32) - (k_i - 65)) mod 95
 
-with `k_i` the key letter as its ASCII code, cycling every five characters. The reduction is modulo 95, not modulo 26.
+dengan `k_i` huruf kunci sebagai kode ASCII-nya, berputar setiap lima karakter. Pengurangannya adalah modulo 95, bukan modulo 26.
 
-The first five ciphertext characters are `PUGUN`. Applying the shifts:
+Lima karakter ciphertext pertama adalah `PUGUN`. Menerapkan shift:
 
-    P - 0 = P
-    U - 6 = O
-    G - 4 = C
-    U - 1 = T
-    N - 8 = F
+P - 0 = P
+kamu - 6 = HAI
+G - 4 = C
+kamu - 1 = T
+N - 8 = F
 
-The plaintext therefore opens `POCTF{`, which is the expected prefix and confirms both the key and its phase: the key starts on the first ciphertext character, not after the prefix.
+Oleh karena itu, teks biasa membuka `POCTF{`, yang merupakan awalan yang diharapkan dan mengonfirmasi kunci dan fasenya: kunci dimulai pada karakter teks sandi pertama, bukan setelah awalan.
 
-One dead end is worth recording. Since the key uses five distinct letters, sorting them alphabetically to `ABEGI` looks harmless, but the cipher is position-dependent. With `ABEGI` the second character decrypts as `U - 1 = T`, producing `POTTF{`, which is not a valid flag. The order taken from the transcript must be preserved.
+Satu jalan buntu layak untuk dicatat. Karena kuncinya menggunakan lima huruf berbeda, mengurutkannya berdasarkan abjad menjadi `ABEGI` terlihat tidak berbahaya, tetapi sandinya bergantung pada posisinya. Dengan `ABEGI`, karakter kedua didekripsi sebagai `U - 1 = T`, menghasilkan `POTTF{`, yang bukan merupakan flag yang valid. Urutan yang diambil dari transkrip harus dipertahankan.
 
-A second ciphertext block, decrypted with the same key and phase, produced the flavortext:
+Blok cipherteks kedua, yang didekripsi dengan kunci dan fase yang sama, menghasilkan teks rasa:
 
-> By salt and by ash, by the breath drawn but not returned, we open the way.
+> Melalui garam dan abu, melalui nafas yang ditarik namun tidak kembali, kita membuka jalan.
 
-The full decryption is one line once the alphabet is fixed:
+Dekripsi penuh adalah satu baris setelah alfabet diperbaiki:
 
 ```python
 p = "".join(chr(32 + ((ord(c) - 32) - (ord(k[i % 5]) - 65)) % 95)
             for i, c in enumerate(ct))
 ```
 
-The flag is `POCTF{████…}`.
+Flag-nya adalah `POCTF{████…}`.

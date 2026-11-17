@@ -2,16 +2,16 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | reverse engineering |
-| **Solves** | 405 |
+| **Bagian** | wave 2 |
+| **Kategori** | reverse engineering |
+| **Jumlah Solve** | 405 |
 
-## Overview
+## Ikhtisar
 
-The specimen is a Python 3.13 `.pyc`. The `check()` function contains five inline 59-byte constants; two are decoys and three XOR together into the flag.
+Spesimennya adalah Python 3.13 `.pyc`. Fungsi `check()` berisi lima konstanta 59-byte sebaris; dua adalah umpan dan tiga XOR bersama-sama menjadi bendera.
 
-## Solve
+## Penyelesaian
 
-After the 16-byte header, `marshal` loads the module code object. The nested `check()` code object has five 59-byte `bytes` constants in `co_consts`. Testing all ten 3-element combinations and XORing each byte-wise, combination `(0, 2, 3)` yields a printable 59-byte string beginning with `POCTF{`; the other combinations do not. Constants 1 and 4 are the decoys.
+Setelah header 16-byte, `marshal` memuat objek kode modul. Objek kode `check()` yang disarangkan memiliki lima konstanta `bytes` 59-byte di `co_consts`. Menguji sepuluh kombinasi 3 elemen dan melakukan XOR pada setiap byte, kombinasi `(0, 2, 3)` menghasilkan string 59 byte yang dapat dicetak yang dimulai dengan `POCTF{`; kombinasi lainnya tidak. Konstanta 1 dan 4 adalah umpannya.
 
-The submitted flag was POCTF{117.1814.████████████████.████████████████} and it was accepted.
+Flag yang dikirimkan adalah POCTF{117.1814.████████████████.████████████████} dan diterima.

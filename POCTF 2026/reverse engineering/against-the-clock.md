@@ -2,29 +2,29 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | reverse engineering |
-| **Solves** | 61 |
+| **Bagian** | wave 8 |
+| **Kategori** | reverse engineering |
+| **Jumlah Solve** | 61 |
 
-## Overview
+## Ikhtisar
 
-`clock` is a stripped non-PIE x86-64 ELF. It calls `time()` twice, performs a short busy loop, and then derives a decryption key from the timestamp. The ciphertext is a 59-byte blob at file offset `0x2020`, and the key stream is SHA-256 in counter mode:
+`clock` adalah ELF non-PIE x86-64 yang dilucuti. Ia memanggil `time()` dua kali, melakukan loop sibuk singkat, dan kemudian mendapatkan kunci dekripsi dari stempel waktu. Teks sandinya adalah gumpalan 59 byte pada file offset `0x2020`, dan aliran kuncinya adalah SHA-256 dalam mode penghitung:
 
 ```text
 SHA256(seed_le64 || 0x542947a8_le64 || counter_le32)
 ```
 
-The first eight bytes of each block are XORed with the ciphertext. The seed is the current Unix time, unless the busy loop takes at least two seconds, in which case the seed is XORed with `0x5a17eddecade5a17`.
+Delapan byte pertama dari setiap blok di-XOR dengan ciphertext. Seed adalah waktu Unix saat ini, kecuali loop sibuk memakan waktu setidaknya dua detik, dalam hal ini seed di-XOR dengan `0x5a17eddecade5a17`.
 
-## Solve
+## Penyelesaian
 
-The constant `0x542947a8` is both a domain separator and the target epoch. In decimal it is `1411983272`, i.e. 2014-09-29 11:51:04 UTC. The intended way to run the binary is therefore:
+Konstanta `0x542947a8` merupakan pemisah domain dan epoch target. Dalam desimal adalah `1411983272`, yaitu 29-09-2014 11:51:04 UTC. Oleh karena itu, cara yang dimaksudkan untuk menjalankan biner adalah:
 
 ```bash
 faketime "@1411983272" ./clock
 ```
 
-Alternatively, replay the decryption in Python:
+Alternatifnya, putar ulang dekripsi dengan Python:
 
 ```python
 import hashlib, struct
@@ -44,4 +44,4 @@ plaintext = bytes(a ^ b for a, b in zip(ct, stream))
 print(plaintext)
 ```
 
-The 59-byte plaintext is the flag. The accepted flag was `████████████████`.
+Teks biasa berukuran 59 byte adalah flag-nya. Flag yang diterima adalah `████████████████`.

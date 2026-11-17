@@ -2,25 +2,25 @@
 
 | | |
 |---|---|
-| **Section** | wave 4 |
-| **Category** | forensics |
-| **Solves** | 281 |
+| **Bagian** | wave 4 |
+| **Kategori** | forensics |
+| **Jumlah Solve** | 281 |
 
-## Overview
+## Ikhtisar
 
-The artifact set is a Home Assistant backup (`home-assistant_v2.db`, `configuration.yaml`), a Mosquitto broker log, and a 1,857-byte packet capture. The narrative places Elena's device tracker at Hollis, unlocks the front door at 14:47 with keypad slot 04, shows motion in the study until 15:34, and locks the door from inside at 15:36. The token is the 16-character base32 serial of a device that should not be in the apartment.
+Kumpulan artefak adalah cadangan Home Assistant (`home-assistant_v2.db`, `configuration.yaml`), log broker Mosquitto, dan pengambilan paket 1.857 byte. Narasinya menempatkan pelacak perangkat Elena di Hollis, membuka kunci pintu depan pada 14:47 dengan slot keypad 04, menunjukkan gerakan di ruang kerja hingga 15:34, dan mengunci pintu dari dalam pada 15:36. Tokennya adalah serial base32 16 karakter dari perangkat yang tidak boleh ada di apartemen.
 
-The capture and broker log run three hours ahead of the narrative clock — 17:47 rather than 14:47 — but the relative order is exact. The problem reduces to correlating three sources: the MQTT capture, which contains the device traffic; the broker log, which shows which clients were connected; and the Home Assistant database, which shows which devices the system knew about. A device that appears in the capture and the broker log but has no normal place in the device registry is the one the intruder carried.
+Catatan penangkapan dan perantara dijalankan tiga jam lebih awal dari jam narasi — 17:47, bukan 14:47 — namun urutan relatifnya tepat. Masalahnya dikurangi menjadi menghubungkan tiga sumber: tangkapan MQTT, yang berisi lalu lintas perangkat; log broker, yang menunjukkan klien mana yang terhubung; dan database Home Assistant, yang menunjukkan perangkat mana yang diketahui sistem. Perangkat yang muncul dalam tangkapan dan log broker tetapi tidak memiliki tempat normal dalam registri perangkat adalah perangkat yang dibawa oleh penyusup.
 
-## Solve
+## Penyelesaian
 
-The capture is a classic Ethernet/IPv4/TCP pcap (`linktype 1`) containing MQTT PUBLISH packets. There is no TCP handshake, so a stream reassembler may not reconstruct the session; parsing the TCP payloads directly is deterministic. `strings` is enough for a first pass:
+Pengambilannya adalah pcap Ethernet/IPv4/TCP klasik (`linktype 1`) yang berisi paket MQTT PUBLISH. Tidak ada jabat tangan TCP, sehingga stream reassembler tidak dapat merekonstruksi sesi; penguraian muatan TCP secara langsung bersifat deterministik. `strings` cukup untuk pass pertama:
 
 ```bash
 strings -n 3 mqtt-capture.pcap | grep -iE 'rf_key|serial|Aeotec|MiniMote|front_door|keypad'
 ```
 
-For exact source addresses and timestamps, walk the pcap records and print each TCP payload:
+Untuk alamat sumber dan stempel waktu yang tepat, telusuri catatan pcap dan cetak setiap muatan TCP:
 
 ```python
 import struct
@@ -52,7 +52,7 @@ while o + 16 <= len(b):
         print(t.isoformat(), data)
 ```
 
-The relevant packets, decoded from their MQTT framing:
+Paket yang relevan, didekodekan dari framing MQTT-nya:
 
 | time (UTC) | source | topic | payload |
 |---|---|---|---|
@@ -60,9 +60,9 @@ The relevant packets, decoded from their MQTT framing:
 | `17:47:30` | `192.168.1.47:55555` | `zwave/rf_key_c4pf5/attributes` | `{"node_id": 47, "product_id": "0x0037", "product_type": "0x0217", "product_serial": "████████████████", "manufacturer": "Aeotec", "model": "MiniMote Key Fob (ZW088)"}` |
 | `18:36:00` | `192.168.1.11:44100` | `zwave/lock.front_door/state` | `{"state": "locked", "code_slot": 4, "changed_by": "keypad_04"}` |
 
-Each MQTT packet starts with `0x30` (PUBLISH), followed by a variable-length remaining-length field, a two-byte topic length, the topic, and the JSON payload. The key fob message arrives exactly 30 seconds after the unlock, from a host that does not appear in the normal MQTT client set, and before the door is locked again. The living-room and study motion packets are normal Zigbee traffic; the key fob is the only new device in the window.
+Setiap paket MQTT dimulai dengan `0x30` (PUBLISH), diikuti dengan kolom panjang sisa panjang variabel, panjang topik dua byte, topik, dan payload JSON. Pesan key fob tiba tepat 30 detik setelah pembukaan kunci, dari host yang tidak muncul di kumpulan klien MQTT normal, dan sebelum pintu dikunci kembali. Paket gerak ruang tamu dan ruang belajar adalah lalu lintas Zigbee normal; key fob adalah satu-satunya perangkat baru di jendela.
 
-The Home Assistant database is SQLite. Open it read-only and query the `devices` table:
+Basis data Asisten Rumah adalah SQLite. Buka hanya baca dan tanyakan tabel `devices`:
 
 ```python
 import sqlite3
@@ -75,16 +75,14 @@ for row in con.execute(
     print(row)
 ```
 
-The suspicious row is:
+Baris yang mencurigakan adalah:
 
 ```text
 ('RF Key Fob (unknown pairing)', 'Aeotec', 'MiniMote Key Fob (ZW088)',
  '[["zwave", "████████████████"]]')
-```
+```Basis data berisi 15 perangkat dan 14 entitas. Key fob adalah satu-satunya perangkat bernama `unknown pairing`, dan merupakan satu-satunya perangkat yang tidak memiliki baris entitas terkait. 14 perangkat lainnya diberi nama, perangkat berpasangan dengan entitas: kunci pintu depan Schlage, sensor gerak Aeotec, lampu Hue, termostat Ecobee, Roomba, dan iPhone Elena. Z-Wave JS membuat baris registri perangkat saat fob berada dalam jangkauan radio, tetapi tidak pernah membuat entitas untuknya. Itu adalah tanda tangan registri dari perangkat yang tidak berpasangan yang diamati dan kemudian menghilang.
 
-The database contains 15 devices and 14 entities. The key fob is the only device named `unknown pairing`, and it is the only device with no corresponding entity row. The other 14 devices are named, paired devices with entities: the Schlage front-door lock, the Aeotec motion sensors, the Hue lamps, the Ecobee thermostat, the Roomba, and Elena's iPhone. Z-Wave JS created a device-registry row when the fob came into radio range, but never created an entity for it. That is the registry signature of an unpaired device that was observed and then disappeared.
-
-The broker log confirms the client lifetime:
+Log broker mengonfirmasi masa hidup klien:
 
 ```bash
 grep -nE 'zwave_c4pf5|192\.168\.1\.47' mosquitto.log
@@ -96,7 +94,7 @@ grep -nE 'zwave_c4pf5|192\.168\.1\.47' mosquitto.log
 134:1719945420: Client zwave_c4pf5 disconnected.
 ```
 
-The epoch values convert to `17:47:30`, `17:47:31`, and `18:37:00` UTC. The fob client exists only for the 49.5-minute intrusion window: it connects 30 seconds after the door unlocks and disconnects after the door locks at `18:36:00`. The source `192.168.1.47` is not one of the normal clients:
+Nilai epoch dikonversi ke `17:47:30`, `17:47:31`, dan `18:37:00` UTC. Klien fob hanya ada untuk jendela intrusi 49,5 menit: klien terhubung 30 detik setelah pintu terbuka dan terputus setelah pintu terkunci di `18:36:00`. Sumber `192.168.1.47` bukan salah satu klien normal:
 
 | client | source | role |
 |---|---|---|
@@ -107,10 +105,8 @@ The epoch values convert to `17:47:30`, `17:47:31`, and `18:37:00` UTC. The fob 
 | `roomba_j7` | `192.168.1.20` | robot vacuum |
 | `zwave_c4pf5` | `192.168.1.47` | only during the intrusion |
 
-The `.47` host appears only for the fob's lifetime. Its last octet matches the fob's `node_id: 47`, and the client ID `zwave_c4pf5` is a transient broker identity, not the serial. The log gives the client and topic; the pcap supplies the serial; the database confirms the same serial in the device registry. The three sources agree.
+Host `.47` hanya muncul seumur hidup fob. Oktet terakhirnya cocok dengan `node_id: 47` fob, dan ID klien `zwave_c4pf5` adalah identitas broker sementara, bukan serial. Log memberikan klien dan topik; pcap memasok serial; database mengonfirmasi serial yang sama di registri perangkat. Ketiga sumber tersebut sepakat.
 
-The fob is an Aeotec MiniMote Key Fob (ZW088), a portable Z-Wave remote. It was not the access method: the door was opened with keypad slot 04, assigned to M. Halberd, not with the fob. The fob is the object the intruder carried. Its radio was detected by Elena's Z-Wave network when it came into range, it published its product attributes 30 seconds after the door opened, and it left the broker when the intruder locked the door and departed. The device that "shouldn't be there" is the fob, not the lock, the motion sensors, or Elena's phone.
+Fobnya adalah Aeotec MiniMote Key Fob (ZW088), remote Z-Wave portabel. Itu bukan metode aksesnya: pintu dibuka dengan slot keypad 04, ditugaskan ke M. Halberd, bukan dengan fob. Fob adalah benda yang dibawa penyusup. Radionya terdeteksi oleh jaringan Z-Wave Elena ketika berada dalam jangkauan, ia menerbitkan atribut produknya 30 detik setelah pintu terbuka, dan meninggalkan broker ketika penyusup mengunci pintu dan pergi. Perangkat yang "tidak boleh ada" adalah fob, bukan kunci, sensor gerak, atau telepon Elena.Beberapa detail merupakan jalan buntu yang disengaja. Basis data berisi banyak string base32 16 karakter — `XKHPH6UB6KQYW2PM` adalah kunci pintu depan, `C4OUN5RVMLW522LU` adalah iPhone Elena, dan seterusnya — tetapi itu milik perangkat yang diberi nama dan dipasangkan. Key fob adalah satu-satunya pasangan yang tidak diketahui dan satu-satunya perangkat tanpa entitas. Tabel `states` dan `entities` berisik dan tidak berisi fob; menanyakannya saja akan melewatkan baris registri perangkat. `(256 bytes)` log broker adalah jumlah framing, bukan serial; muatan TCP pcap adalah JSON otoritatif. Pcap tidak memiliki jabat tangan TCP, jadi disektor MQTT normal mungkin tidak memasang kembali aliran; penguraian muatan langsung sudah cukup. Jam artefak juga digeser: pcap dan log bertuliskan `2024-07-02`, sedangkan narasinya mengatakan Kamis `06/25/2026`, dan waktunya berbeda tiga jam. Urutan relatif — buka kunci, fob, gerak, kunci — adalah yang terpenting.
 
-Several details are deliberate dead ends. The database contains many 16-character base32 strings — `XKHPH6UB6KQYW2PM` is the front-door lock, `C4OUN5RVMLW522LU` is Elena's iPhone, and so on — but those belong to named, paired devices. The key fob is the only unknown pairing and the only device without an entity. The `states` and `entities` tables are noisy and do not contain the fob; querying them alone misses the device-registry row. The broker log's `(256 bytes)` is a framing count, not the serial; the pcap's TCP payload is the authoritative JSON. The pcap has no TCP handshake, so a normal MQTT dissector may not reassemble the stream; direct payload parsing is sufficient. The artifact clocks are also shifted: the pcap and log say `2024-07-02`, while the narrative says Thursday `06/25/2026`, and the times differ by three hours. The relative sequence — unlock, fob, motion, lock — is what matters.
-
-The fob's serial is 16 base32 characters and is accepted raw or wrapped by the artifact page. The device is the Aeotec MiniMote Key Fob (ZW088), and the token is its `product_serial`. The serial of the unknown key fob is `████████████████`, and the flag is `POCTF{████…}`.
+Serial fob terdiri dari 16 karakter base32 dan diterima mentah atau dibungkus oleh halaman artefak. Perangkat tersebut adalah Aeotec MiniMote Key Fob (ZW088), dan tokennya adalah `product_serial`-nya. Seri key fob yang tidak diketahui adalah `████████████████`, dan flag-nya adalah `POCTF{████…}`.

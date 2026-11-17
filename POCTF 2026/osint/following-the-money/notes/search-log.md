@@ -1,64 +1,62 @@
 # Search log — Following the Money
 
-This is the cleaned-up version of the notes I kept during the solve. It is deliberately more detailed than the write-up: the dead ends are the point. Credentials, session cookies, the team key, and the flag are omitted.
+Ini adalah versi bersih dari catatan yang saya simpan selama penyelesaian. Sengaja dibuat lebih detail daripada tulisannya: jalan buntu itulah intinya. Kredensial, cookie sesi, kunci tim, dan flag dihilangkan.
 
-## 0. The artifact
+## 0. Artefak
 
-The challenge shipped a ZIP with thirty PNG fragments. The archive hash was:
+Tantangan tersebut mengirimkan ZIP dengan tiga puluh fragmen PNG. Hash arsipnya adalah:
 
 ```text
 864cbc23a8756ed94d793f6f81259b47857b71d16268ca3ad0d2ca7f9cd6b90a
 ```
 
-Each PNG is a torn piece with an alpha mask. The pieces are not a simple grid: the tears overlap and the edges are irregular.
+Setiap PNG adalah potongan robek dengan topeng alfa. Potongan-potongannya bukanlah kisi-kisi sederhana: sobekannya saling tumpang tindih dan ujung-ujungnya tidak beraturan.
 
-## 1. The jigsaw (evening 1, ~1 h)
+## 1. Jigsaw (malam 1, ~1 jam)
 
-First attempt: sort by the alpha-mask bounding box and place the pieces on a 6x5 grid. This gets the general layout but leaves the engraved lines misaligned. The trick is to match the torn edges, not the rectangular bounding boxes: the alpha mask is the shape, and the engraved lines continue across the tear.
+Upaya pertama: urutkan berdasarkan kotak pembatas alpha-mask dan letakkan potongannya pada kotak 6x5. Ini mendapatkan tata letak umum tetapi membiarkan garis terukir tidak sejajar. Caranya adalah dengan mencocokkan bagian tepi yang robek, bukan kotak pembatas persegi panjang: topeng alfa adalah bentuknya, dan garis yang diukir terus melintasi sobekan.
 
-After reconstruction, the serial is visible in two places. The top-right crop is the cleanest:
+Setelah rekonstruksi, serial tersebut terlihat di dua tempat. Pangkas kanan atas adalah yang paling bersih:
 
 ```text
 E10093751B
 ```
 
-The bill is a 2017 series $1 with Jovita Carranza's signature. The `E` prefix is the Federal Reserve district letter for Richmond; the trailing `B` is the block letter.
+Uang kertas tersebut adalah seri $1 tahun 2017 dengan tanda tangan Jovita Carranza. Awalan `E` adalah surat distrik Federal Reserve untuk Richmond; `B` di belakangnya adalah huruf besar.
 
-## 2. Where's George (evening 1, ~1 h)
+## 2. Di mana George (malam 1, ~1 jam)
 
-The challenge gives `b:Fuzhs8rJ7u`. The direct report URL is:
+Tantangannya memberi `b:Fuzhs8rJ7u`. URL laporan langsungnya adalah:
 
 ```text
 https://www.wheresgeorge.com/report.php?b=Fuzhs8rJ7u
 ```
 
-The direct URL opens the bill page, but the travel history is not visible without a lookup. The site's lookup form accepts a ZIP code and the serial; using a ZIP from the bill's history confirmed the serial existed. The history then shows the entries, including the Initial Entry. The note points to:
+URL langsung membuka halaman tagihan, namun riwayat perjalanan tidak terlihat tanpa pencarian. Formulir pencarian situs menerima kode pos dan serial; menggunakan ZIP dari riwayat tagihan mengonfirmasi bahwa serial tersebut ada. Riwayat kemudian menampilkan entri, termasuk Entri Awal. Catatan tersebut menunjuk pada:
 
 ```text
 https://pointeroverflowctf.com/challenges/following-the-money/astroblog/
 ```
 
-We used the site's form once and did not add further entries. The note is the only part of the report used in the chain; the travel history itself is not.
+Kami menggunakan formulir situs satu kali dan tidak menambahkan entri lebih lanjut. Catatan tersebut merupakan satu-satunya bagian laporan yang digunakan dalam rantai; riwayat perjalanannya sendiri tidak.
 
-## 3. The blog (evening 1, ~30 min)
+## 3. Blog (1 malam, ~30 menit)
 
-The blog has one relevant post, #137, "The viaduct, finally clear". The caption gives:
+Blog tersebut memiliki satu postingan yang relevan, #137, "Jembatan, akhirnya bersih". Judulnya memberi:
 
 ```text
 2024-10-12T21:18:38Z
 ```
 
-The page states the image is 1620 px tall with a 45.9° vertical FOV. The post includes two images: the star field and a "horizon marked" version. The second image is a redaction joke: a purple `[REDACTED]` panel covers the lower half, a row of cartoon figures sits above it, and a black band labelled `HORIZON` marks row 1443. The horizon is not drawn as a line; the band is the marker.
+Halaman tersebut menyatakan bahwa gambar tersebut memiliki tinggi 1620 piksel dengan FOV vertikal 45,9°. Postingan tersebut mencakup dua gambar: bidang bintang dan versi "bertanda cakrawala". Gambar kedua adalah lelucon redaksi: panel ungu `[REDACTED]` menutupi bagian bawah, deretan gambar kartun berada di atasnya, dan pita hitam berlabel `HORIZON` menandai baris 1443. Cakrawala tidak digambar sebagai garis; band adalah penandanya.
 
-There is a timestamp discrepancy: the edited image's EXIF says `2024:10:12 22:44:26`, but the blog caption says `21:18:38Z`. The caption is the value that produces the accepted longitude; the EXIF time is local/edited metadata and is not used.
+Terdapat perbedaan stempel waktu: EXIF ​​gambar yang diedit menyatakan `2024:10:12 22:44:26`, namun keterangan blog menyatakan `21:18:38Z`. Judulnya adalah nilai yang menghasilkan garis bujur yang diterima; waktu EXIF ​​adalah metadata lokal/yang diedit dan tidak digunakan.Postingan #136, "Leonids di atas taman belakang", menyebutkan lampu jalan di Harrow Road. Kami mencoba menggunakannya untuk menandai kota, tetapi tidak menentukan garis bujur; itu adalah teks rasa, bukan koordinat.
 
-Post #136, "Leonids over the back garden", mentions a streetlight on Harrow Road. We tried to use that to pin the town, but it did not resolve the longitude; it is flavour text, not a coordinate.
+## 4. Jalan memutar jembatan (malam 2, ~6 jam)
 
-## 4. The viaduct detour (evening 2, ~6 h)
+Garis lintang dalam tantangan ini adalah 54.1116 N. Langkah yang jelas adalah mengidentifikasi jembatan dan menggunakan koordinatnya. Kami mencoba:
 
-The latitude in the challenge is 54.1116 N. The obvious move is to identify the viaduct and use its coordinates. We tried:
-
-| Candidate | Latitude | Longitude | Verdict |
+| Kandidat | Lintang | Bujur | Hasil |
 |---|---:|---:|---|
 | Ribblehead | 54.2104 | -2.3702 | visually close, ~11 km north of the target latitude |
 | Clapham / Wenning | 54.1041 | -2.4085 | close in latitude, wrong arch count and curve |
@@ -66,24 +64,24 @@ The latitude in the challenge is 54.1116 N. The obvious move is to identify the 
 | Helwith Bridge group | 54.1235 | -2.2909 | too far east, wrong setting |
 | Bentham line | 54.1125 | -2.4911 | close in latitude, wrong viaduct |
 
-Ribblehead is the trap: it is the famous viaduct, it is in the right general area, and the star field looks plausible over it. But it is 0.0988° north of the stated latitude, about 11 km. The challenge never asks for the viaduct. It asks for the camera's longitude.
+Ribblehead adalah jebakannya: ini adalah jembatan yang terkenal, berada di area umum kanan, dan bidang bintang tampak masuk akal di atasnya. Namun letaknya 0,0988° utara dari garis lintang yang disebutkan, sekitar 11 km. Tantangannya tidak pernah meminta jembatan. Ia menanyakan garis bujur kamera.
 
-We also tested the moon hypothesis: the post mentions the moon coming over the fell, so the moon's position at the capture time might constrain the azimuth. It did not produce a unique longitude.
+Kami juga menguji hipotesis bulan: postingan tersebut menyebutkan bulan akan datang saat musim gugur, sehingga posisi bulan pada waktu pengambilan gambar mungkin membatasi azimuth. Itu tidak menghasilkan garis bujur yang unik.
 
-## 5. The API graveyard (evening 2, ~2 h)
+## 5. Kuburan API (malam 2, ~2 jam)
 
-To check the candidates we tried:
+Untuk memeriksa kandidat yang kami coba:
 
-- Overpass API: 406 Not Acceptable with the default user agent, then timeouts on the larger queries.
-- Wikidata SPARQL: 429 Too Many Requests after a few queries.
-- Geograph API: 403 Forbidden.
-- The challenge site's Flask session cookie went stale mid-solve; re-authenticating fixed it.
+- Overpass API: 406 Tidak Dapat Diterima dengan agen pengguna default, lalu batas waktu pada kueri yang lebih besar.
+- Wikidata SPARQL: 429 Terlalu Banyak Permintaan setelah beberapa pertanyaan.
+- API Geografi: 403 Dilarang.
+- Cookie sesi Flask di situs tantangan menjadi basi di tengah penyelesaian; mengautentikasi ulang memperbaikinya.
 
-The useful data came from OSM tiles and Wikipedia, not from the APIs.
+Data yang berguna berasal dari ubin OSM dan Wikipedia, bukan dari API.
 
-## 6. Astrometry (evening 2, ~2 h)
+## 6. Astrometri (malam 2, ~2 jam)
 
-Astrometry.net solves the star field. The WCS reference star is at:
+Astrometry.net memecahkan bidang bintang. Bintang referensi WCS ada di:
 
 ```text
 CRVAL1 =   9.5355366203°   (RA)
@@ -92,25 +90,25 @@ CRPIX1 =  63.2815876007
 CRPIX2 = 660.067301432
 ```
 
-The first mistake was to use the star at the image centre. The WCS reference star is not the centre; it is the star at `CRPIX`. The second mistake was to use the full spherical branch: with the altitude and the latitude, you can recover the hour angle and then the longitude, but the challenge hint reduces the problem to the meridian relation. The literal `GST - RA` using the WCS reference star is the accepted path.
+Kesalahan pertama adalah menggunakan bintang di pusat gambar. Bintang referensi WCS bukanlah pusatnya; itu adalah bintang di `CRPIX`. Kesalahan kedua adalah menggunakan cabang bola penuh: dengan ketinggian dan garis lintang, Anda dapat memulihkan sudut jam dan kemudian garis bujur, namun petunjuk tantangan mengurangi masalah ke hubungan meridian. `GST - RA` literal yang menggunakan bintang referensi WCS adalah jalur yang diterima.
 
-## 7. The formula (evening 2, ~30 min)
+## 7. Rumusnya (malam 2, ~30 menit)
 
-The altitude:
+Ketinggian:
 
 ```text
 alt = (1443 - 660.067301432) * 45.9 / 1620
     = 22.1831°
 ```
 
-The sidereal time:
+Waktu sideris:
 
 ```text
 GST = 280.46061837 + 360.98564736629 * (t - J2000) / 86400  (mod 360)
     = 341.595636°
 ```
 
-The longitude:
+Garis bujur:
 
 ```text
 longitude = GST - RA
@@ -118,9 +116,9 @@ longitude = GST - RA
           = 332.060099°  ->  -27.939901°
 ```
 
-Submitting `-27.939901` returned the flag. The flag is redacted in the public write-up.
+Mengirimkan `-27.939901` mengembalikan bendera. Flag tersebut disunting dalam tulisan publik.
 
-## 8. Timeline
+## 8. Garis Waktu
 
 | Phase | Time |
 |---|---:|
@@ -133,9 +131,7 @@ Submitting `-27.939901` returned the flag. The flag is redacted in the public wr
 | Formula | ~0.5 h |
 | **Total** | **~13 h** |
 
-## 9. What I would do differently
-
-1. Read the hint literally. `GST - RA` is the whole formula; the spherical branch is a distraction.
-2. Use the WCS reference star, not the image centre.
-3. Treat the viaduct as flavour, not as a coordinate source. The latitude is given; the longitude is the unknown.
-4. Keep a search log from the first minute. The dead ends are the write-up.
+## 9. Apa yang akan saya lakukan secara berbeda1. Baca petunjuknya secara harfiah. `GST - RA` adalah keseluruhan formula; cabang bola adalah gangguan.
+2. Gunakan bintang referensi WCS, bukan pusat gambar.
+3. Perlakukan jembatan sebagai perasa, bukan sebagai sumber koordinat. Keleluasaan diberikan; garis bujur tidak diketahui.
+4. Simpan log pencarian dari menit pertama. Jalan buntu adalah tulisannya.

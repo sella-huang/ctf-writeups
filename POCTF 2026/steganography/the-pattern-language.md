@@ -2,24 +2,24 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | steganography |
-| **Solves** | 50 |
+| **Bagian** | wave 8 |
+| **Kategori** | steganography |
+| **Jumlah Solve** | 50 |
 
-## Overview
+## Ikhtisar
 
-`pattern.png` is a 440-by-440 tartan swatch with a 20-pixel border and a 16-by-16 grid of 25-pixel threads. Each cell is a one-pixel checkerboard made from two shades. The shades are multiples of `0x11`, so they are nibbles `0x0` through `0xf` rendered as grayscale.
+`pattern.png` adalah contoh tartan berukuran 440 kali 440 dengan batas 20 piksel dan kisi 25 piksel berukuran 16 kali 16. Setiap sel adalah kotak-kotak satu piksel yang terbuat dari dua warna. Nuansanya merupakan kelipatan dari `0x11`, sehingga merupakan camilan `0x0` hingga `0xf` yang dirender sebagai skala abu-abu.
 
-The plain weave is the clue: at every intersection the visible pixel is exactly one of the two thread colors. The color common to a column is the warp thread; the color common to a row is the weft thread. Reading the columns and rows gives the two 16-nibble setts:
+Tenunan polos adalah petunjuknya: di setiap persimpangan, piksel yang terlihat persis merupakan salah satu dari dua warna benang. Warna yang umum pada sebuah kolom adalah benang lusi; warna yang umum pada satu baris adalah benang pakan. Membaca kolom dan baris menghasilkan dua set 16 camilan:
 
 ```text
 warp: 7899d6bac0a05dfc
 weft: ebf0bfd3fca1fb61
 ```
 
-## Solve
+## Penyelesaian
 
-The nonce is not the concatenation of the setts. The image is a two-share visual-cryptography construction: the warp and weft are independent shares, and the secret is their XOR. Interpret each sett as an 8-byte value and XOR them:
+Nonce bukanlah gabungan dari himpunan. Gambar tersebut merupakan konstruksi kriptografi visual dua bagian: lungsin dan pakan adalah bagian yang independen, dan rahasianya adalah XOR-nya. Interpretasikan setiap sett sebagai nilai 8-byte dan XOR mereka:
 
 ```python
 warp = int("7899d6bac0a05dfc", 16)
@@ -27,4 +27,4 @@ weft = int("ebf0bfd3fca1fb61", 16)
 print(f"{warp ^ weft:016x}")
 ```
 
-The result is a 16-hex-character raw nonce. Submitting that value on the challenge page was accepted. The accepted raw nonce was `████████████████`.
+Hasilnya adalah nonce mentah 16-hex-karakter. Pengiriman nilai tersebut pada halaman tantangan diterima. Nonce mentah yang diterima adalah `████████████████`.

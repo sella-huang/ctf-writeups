@@ -2,37 +2,37 @@
 
 | | |
 |---|---|
-| **Section** | wave 4 |
-| **Category** | web |
-| **Solves** | 262 |
+| **Bagian** | wave 4 |
+| **Kategori** | web |
+| **Jumlah Solve** | 262 |
 
-## Overview
+## Ikhtisar
 
-A URL preview service fetches user-supplied URLs server-side and reports only the outcome and the upstream HTTP status code. A hostname filter blocks loopback and private addresses, but the filter can be bypassed with an alternative representation of `127.0.0.1`. That turns the preview service into a status-code oracle against a second application bound to `127.0.0.1:9001`, whose `/flag` endpoint checks a nonce prefix.
+Layanan pratinjau URL mengambil URL yang disediakan pengguna di sisi server dan hanya melaporkan hasil dan kode status HTTP hulu. Filter nama host memblokir loopback dan alamat pribadi, tetapi filter tersebut dapat dilewati dengan representasi alternatif `127.0.0.1`. Hal ini mengubah layanan pratinjau menjadi oracle kode status terhadap aplikasi kedua yang terikat ke `127.0.0.1:9001`, yang titik akhir `/flag`-nya memeriksa awalan nonce.
 
-## Solve
+## Penyelesaian
 
-The preview endpoint accepted a JSON body of the form `{"url": "..."}` and returned a small JSON object such as:
+Titik akhir pratinjau menerima isi JSON dalam bentuk `{"url": "..."}` dan mengembalikan objek JSON kecil seperti:
 
 ```json
 {"note": "preview generated", "ok": true, "upstream_status": 200}
 ```
 
-Requests to literal loopback and private hosts were rejected before any fetch:
+Permintaan ke loopback literal dan host pribadi ditolak sebelum pengambilan apa pun:
 
 ```json
 {"error": "host blocked by policy", "hostname_seen": "127.0.0.1", "ok": false}
 ```
 
-The filter operated on the hostname string, not on the resolved address. The single-label host `0` passed the filter and resolved to `127.0.0.1`; the decimal and octal forms of the address worked as well. The preview service could therefore be pointed at the internal application:
+Filter beroperasi pada string nama host, bukan pada alamat yang diselesaikan. Host berlabel tunggal `0` lolos filter dan diselesaikan ke `127.0.0.1`; bentuk alamat desimal dan oktal juga berfungsi. Oleh karena itu, layanan pratinjau dapat diarahkan ke aplikasi internal:
 
 ```text
 http://0:9001/flag?guess=<prefix>
 ```
 
-The internal application returns `200` when the supplied hexadecimal string is a prefix of the 16-character nonce, and `404` otherwise (`400` for an empty guess). Because the preview service reports the upstream status code, it acts as a prefix oracle.
+Aplikasi internal mengembalikan `200` ketika string heksadesimal yang disediakan adalah awalan nonce 16 karakter, dan `404` sebaliknya (`400` untuk tebakan kosong). Karena layanan pratinjau melaporkan kode status upstream, layanan ini bertindak sebagai awalan oracle.
 
-I recovered the nonce one character at a time. For each position, the current known prefix was extended with each candidate from `0123456789abcdef`; the candidate whose status was `200` was kept, and the search moved to the next position:
+Saya memulihkan karakter nonce satu per satu. Untuk setiap posisi, awalan yang diketahui saat ini diperpanjang dengan masing-masing kandidat dari `0123456789abcdef`; calon yang berstatus `200` dipertahankan, dan pencarian dipindahkan ke posisi berikutnya:
 
 ```python
 prefix = ""
@@ -43,4 +43,4 @@ for _ in range(16):
             break
 ```
 
-Sixteen positions yielded the complete 16-character nonce, and a final query with the full value returned `200`. The submitted nonce was ████████████████ and it was accepted.
+Enam belas posisi menghasilkan nonce 16 karakter lengkap, dan kueri akhir dengan nilai penuh mengembalikan `200`. Nonce yang dikirimkan adalah ████████████████ dan diterima.

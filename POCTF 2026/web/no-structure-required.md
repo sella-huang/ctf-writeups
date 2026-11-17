@@ -2,30 +2,30 @@
 
 | | |
 |---|---|
-| **Section** | wave 3 |
-| **Category** | web |
-| **Solves** | 340 |
+| **Bagian** | wave 3 |
+| **Kategori** | web |
+| **Jumlah Solve** | 340 |
 
-## Overview
+## Ikhtisar
 
-SecureNotes v1.0 is a small document-store application backed by the “Whitmore Storage Engine.” Its login endpoint accepts JSON and passes the supplied values directly into the query object. This allows operator injection to bypass authentication, and the browse endpoint then exposes documents from collections that the signed-in user should not reach.
+SecureNotes v1.0 adalah aplikasi penyimpanan dokumen kecil yang didukung oleh “Whitmore Storage Engine.” Titik akhir loginnya menerima JSON dan meneruskan nilai yang diberikan langsung ke objek kueri. Hal ini memungkinkan injeksi operator untuk melewati autentikasi, dan titik akhir penelusuran kemudian menampilkan dokumen dari koleksi yang tidak boleh dijangkau oleh pengguna yang masuk.
 
-## Solve
+## Penyelesaian
 
-The login form posts JSON to `login` with `username` and `password`. A source comment confirmed that the endpoint accepts `application/json` and that the two keys are passed through to the query as-is. Supplying query operators instead of strings bypassed the credential check:
+Formulir login memposting JSON ke `login` dengan `username` dan `password`. Komentar sumber mengonfirmasi bahwa titik akhir menerima `application/json` dan kedua kunci diteruskan ke kueri apa adanya. Menyediakan operator kueri alih-alih string melewati pemeriksaan kredensial:
 
 ```json
 {"username": {"$ne": null}, "password": {"$ne": null}}
 ```
 
-The response set a session cookie and reported a successful sign-in as an ordinary user:
+Responsnya menetapkan cookie sesi dan melaporkan keberhasilan masuk sebagai pengguna biasa:
 
 ```json
 {"message": "Signed in as j.abernathy.", "next": ".../dashboard", "ok": true}
 ```
 
-The dashboard linked to `browse?col=notes`, where the `col` parameter selects a collection and the raw documents are rendered. The page's own note stated that other collections may exist depending on role, but the browse handler applied no ownership or role restriction to the requested collection.
+Dasbor ditautkan ke `browse?col=notes`, tempat parameter `col` memilih koleksi dan dokumen mentah dirender. Catatan halaman tersebut menyatakan bahwa koleksi lain mungkin ada tergantung pada peran, namun pengendali penelusuran tidak menerapkan batasan kepemilikan atau peran pada koleksi yang diminta.
 
-Enumerating collection names through `browse?col=<name>` exposed the backing data. The `users` collection revealed usernames, passwords, and roles, including an administrator account. The `secrets` collection returned a single document labelled as the team flag, with the marker in its `flag` field. Accessing that collection required no administrator session; the authentication bypass plus the unrestricted collection parameter was sufficient.
+Menghitung nama koleksi melalui `browse?col=<name>` mengekspos data pendukung. Koleksi `users` mengungkapkan nama pengguna, kata sandi, dan peran, termasuk akun administrator. Koleksi `secrets` mengembalikan satu dokumen berlabel flag tim, dengan penanda di bidang `flag`. Mengakses koleksi itu tidak memerlukan sesi administrator; bypass otentikasi ditambah parameter pengumpulan tidak terbatas sudah cukup.
 
-The submitted flag was POCTF{78.1814.████████████████.████████████████} and it was accepted.
+Flag yang dikirimkan adalah POCTF{78.1814.████████████████.████████████████} dan diterima.

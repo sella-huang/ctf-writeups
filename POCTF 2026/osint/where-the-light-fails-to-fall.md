@@ -2,43 +2,43 @@
 
 | | |
 |---|---|
-| **Section** | wave 1 |
-| **Category** | osint |
-| **Solves** | 516 |
+| **Bagian** | wave 1 |
+| **Kategori** | osint |
+| **Jumlah Solve** | 516 |
 
-## Overview
+## Ikhtisar
 
-The brief is a photo of a pigeon — Sir Marcus Skuttlebanks, apparently well travelled — with two annotations: a red arrow pointing north, and the pigeon's shadow falling to its right. The observation is timestamped `2026-06-20 · 19:55 · UTC+02:00`. The question is the city.
+Laporan singkatnya adalah foto seekor merpati - Sir Marcus Skuttlebanks, tampaknya sering bepergian - dengan dua anotasi: panah merah menunjuk ke utara, dan bayangan merpati jatuh ke kanannya. Pengamatan diberi stempel waktu `2026-06-20 · 19:55 · UTC+02:00`. Pertanyaannya adalah kotanya.
 
-There is only one hard piece of evidence in the image: the direction of the shadow relative to north. Everything else is scenery. A shadow points exactly away from the sun, and the sun's azimuth at a given instant is a function of latitude and longitude, so the photo is not a photo problem but a solar-geometry problem with a unique answer.
+Hanya ada satu bukti kuat dalam gambar tersebut: arah bayangan relatif ke utara. Segala sesuatu yang lain adalah pemandangan. Sebuah bayangan menunjuk tepat jauh dari matahari, dan azimuth matahari pada saat tertentu merupakan fungsi dari garis lintang dan garis bujur, sehingga foto tersebut bukanlah soal foto melainkan soal geometri matahari dengan jawaban yang unik.
 
-## Solve
+## Penyelesaian
 
-The red arrow defines the frame, so the shadow's direction can be measured directly in the image plane. Overlay a protractor with its baseline on the arrow — an on-screen one such as `onlineprotractortool.org` is enough — and read clockwise from north:
+Panah merah mendefinisikan bingkai, sehingga arah bayangan dapat diukur langsung pada bidang gambar. Hamparkan busur derajat dengan garis dasarnya pada panah — yang ada di layar seperti `onlineprotractortool.org` sudah cukup — dan baca searah jarum jam dari utara:
 
 ```
 shadow bearing ≈ 109°
 ```
 
-A shadow is the anti-solar direction, so the sun was at:
+Bayangan merupakan arah yang berlawanan dengan matahari, sehingga matahari berada pada :
 
 ```
 sun azimuth = shadow bearing + 180° = 289°
 ```
 
-That is a north-west evening sun, which matches the timestamp.
+Itu adalah matahari sore di barat laut, yang cocok dengan stempel waktu.
 
-`2026-06-20 19:55 UTC+02:00` is `17:55 UTC`. On 20 June at that hour the sun is still up across western and central Europe, so daylight alone is not a discriminator. The offset in the timestamp is: the clock was running CEST, which puts the location in the UTC+2 belt and removes London, a UTC+1 city. What remains among the major cities with the sun still up is essentially Paris and Amsterdam.
+`2026-06-20 19:55 UTC+02:00` adalah `17:55 UTC`. Pada tanggal 20 Juni pada jam tersebut matahari masih terbit di seluruh Eropa bagian barat dan tengah, jadi siang hari saja bukanlah sebuah diskriminator. Offset pada stempel waktu adalah: jam berjalan CEST, yang menempatkan lokasi di sabuk UTC+2 dan menghapus London, kota UTC+1. Yang tersisa di antara kota-kota besar dengan matahari masih terbit adalah Paris dan Amsterdam.
 
-Entering the date, the time and the CEST timezone into `suncalc.org`, then clicking each candidate and reading the azimuth from the info panel:
+Memasukkan tanggal, waktu dan zona waktu CEST ke dalam `suncalc.org`, lalu mengklik masing-masing kandidat dan membaca azimuth dari panel info:
 
 | City | Sun azimuth | Implied shadow bearing |
 |---|---|---|
 | Paris | 284° | 104° |
 | Amsterdam | 289° | **109°** |
 
-Amsterdam matches the photo exactly, Paris is five degrees off. Five degrees is small, which is why the angle has to be measured rather than estimated by eye, and why the timezone filter is worth doing first: it turns "any city in Europe" into a two-item shortlist before the protractor comes out.
+Amsterdam sama persis dengan fotonya, Paris berjarak lima derajat. Lima derajat itu kecil, itulah sebabnya sudutnya harus diukur daripada diperkirakan dengan mata, dan mengapa filter zona waktu layak dilakukan terlebih dahulu: filter ini mengubah "kota mana pun di Eropa" menjadi daftar dua item sebelum busur derajat keluar.
 
-The north arrow is what makes the image solvable at all: it converts a picture into a bearing, and a bearing plus a timestamp intersects a point on the globe.
+Panah utara inilah yang membuat gambar dapat dipecahkan: ia mengubah gambar menjadi sebuah bantalan, dan sebuah bantalan ditambah stempel waktu memotong sebuah titik di globe.
 
-The city is **Amsterdam**.
+Kotanya adalah **Amsterdam**.

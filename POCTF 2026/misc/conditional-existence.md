@@ -2,24 +2,24 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | misc |
-| **Solves** | 163 |
+| **Bagian** | wave 5 |
+| **Kategori** | misc |
+| **Jumlah Solve** | 163 |
 
-## Overview
+## Ikhtisar
 
-The per-team archive contains a small C program and its source. Without the required environment variable the program prints only `.`. The source checks `POCTF_INCANTATION`: it must be exactly 12 uppercase hexadecimal characters. That value is used as a repeating XOR key over an embedded ciphertext, and the program verifies the SHA-256 of the decrypted plaintext against an embedded digest. The source also contains a four-part riddle whose answers produce the incantation.
+Arsip per tim berisi program C kecil dan sumbernya. Tanpa variabel lingkungan yang diperlukan, program hanya mencetak `.`. Sumber memeriksa `POCTF_INCANTATION`: harus tepat 12 karakter heksadesimal huruf besar. Nilai tersebut digunakan sebagai kunci XOR berulang pada ciphertext yang tertanam, dan program memverifikasi SHA-256 dari teks biasa yang didekripsi terhadap intisari yang tertanam. Sumbernya juga berisi teka-teki empat bagian yang jawabannya menghasilkan mantera.
 
-## Solve
+## Penyelesaian
 
-The four riddle answers are:
+Keempat jawaban teka-teki tersebut adalah:
 
-- the year Helena P. Blavatsky died in London: `1891`;
-- the surname of the London paranormal investigator who ran the National Laboratory of Psychical Research and investigated Borley Rectory: `price`;
-- the Indian suburb where the Theosophical Society moved its international headquarters in 1882: `adyar`;
-- the one-word name of the Enochian scryer who recorded the angelic communications with John Dee: `kelley`.
+- tahun kematian Helena P. Blavatsky di London: `1891`;
+- nama belakang penyelidik paranormal London yang menjalankan Laboratorium Nasional Penelitian Psikis dan menyelidiki Borley Rectory: `price`;
+- pinggiran kota India tempat Theosophical Society memindahkan kantor pusat internasionalnya pada tahun 1882: `adyar`;
+- nama satu kata dari scryer Enochian yang mencatat komunikasi malaikat dengan John Dee: `kelley`.
 
-The phrase is therefore `1891 price adyar kelley`. Concatenating the answers with single spaces, hashing the UTF-8 bytes with SHA-256, and taking the first 12 uppercase hexadecimal characters gives the required incantation.
+Oleh karena itu frasa tersebut adalah `1891 price adyar kelley`. Menggabungkan jawaban dengan spasi tunggal, melakukan hashing pada byte UTF-8 dengan SHA-256, dan mengambil 12 karakter heksadesimal huruf besar pertama akan menghasilkan mantra yang diperlukan.
 
 ```python
 import hashlib
@@ -29,6 +29,6 @@ incantation = hashlib.sha256(phrase.encode()).hexdigest()[:12].upper()
 print(incantation)
 ```
 
-Running the supplied program with that value in `POCTF_INCANTATION` decrypts the ciphertext, satisfies the embedded hash check, and prints the flag.
+Menjalankan program yang disediakan dengan nilai tersebut di `POCTF_INCANTATION` akan mendekripsi ciphertext, memenuhi pemeriksaan hash yang tertanam, dan mencetak flag.
 
-The flag is ████████████████.
+Flag-nya adalah ████████████████.

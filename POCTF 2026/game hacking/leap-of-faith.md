@@ -2,21 +2,21 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | game hacking |
-| **Solves** | 352 |
+| **Bagian** | wave 2 |
+| **Kategori** | game hacking |
+| **Jumlah Solve** | 352 |
 
-## Overview
+## Ikhtisar
 
-The download is a Godot 4.7.1 x86-64 export. The embedded PCK starts at file offset `0x4611138` and contains 79 files. The relevant scripts are `player.gd`, `goal.gd`, `GameController.gd`, `SceneManager.gd`, `end_screen.gd`, `auth_check.gd`, and `FlagToken.gd`.
+Unduhannya adalah ekspor Godot 4.7.1 x86-64. PCK tertanam dimulai pada file offset `0x4611138` dan berisi 79 file. Skrip yang relevan adalah `player.gd`, `goal.gd`, `GameController.gd`, `SceneManager.gd`, `end_screen.gd`, `auth_check.gd`, dan `FlagToken.gd`.
 
-`player.gd` is a `CharacterBody3D` with exported `move_speed=6.0`, `jump_velocity=17.5`, and `gravity=18.0`. The final platform is intentionally out of reach for that jump. `goal.gd` is an `Area3D` that emits `goal_reached` when the player body enters it. `GameController.gd` connects that signal to `Scenes.goto_end()`, which loads `end_screen.tscn`. The end screen immediately calls `FlagService.request_marker()`, and `FlagToken.gd` POSTs to `/api/challenges/47/complete` with the team headers and the nonce from `/api/challenges/47/instance`.
+`player.gd` adalah `CharacterBody3D` dengan `move_speed=6.0`, `jump_velocity=17.5`, dan `gravity=18.0` yang diekspor. Platform terakhir sengaja di luar jangkauan lompatan itu. `goal.gd` adalah `Area3D` yang mengeluarkan `goal_reached` saat tubuh pemain memasukinya. `GameController.gd` menghubungkan sinyal tersebut ke `Scenes.goto_end()`, yang memuat `end_screen.tscn`. Layar akhir segera memanggil `FlagService.request_marker()`, dan `FlagToken.gd` POST ke `/api/challenges/47/complete` dengan header tim dan nonce dari `/api/challenges/47/instance`.
 
-The challenge page notes that the uploaded binary is actually the test build and trivializes the intended jump. That is useful, but the completion endpoint is the weaker link: it receives no proof that the player ever reached the goal, cleared the level, or even launched the game. It only validates the credentials and the instance nonce.
+Halaman tantangan mencatat bahwa biner yang diunggah sebenarnya adalah uji coba dan meremehkan lompatan yang dimaksudkan. Hal ini berguna, namun titik akhir penyelesaian adalah tautan yang lebih lemah: titik akhir tersebut tidak menerima bukti bahwa pemain pernah mencapai tujuan, menyelesaikan level, atau bahkan meluncurkan permainan. Ini hanya memvalidasi kredensial dan nonce instans.
 
-## Solve
+## Penyelesaian
 
-Request a nonce with the credentials from `credentials.zip`:
+Minta nonce dengan kredensial dari `credentials.zip`:
 
 ```http
 GET /api/challenges/47/instance HTTP/1.1
@@ -25,13 +25,13 @@ X-POCTF-GAME-TOKEN: ████████████████
 X-POCTF-TEAM-KEY: ████████████████
 ```
 
-The response contains the nonce:
+Responsnya berisi nonce:
 
 ```json
 {"challenge_id":47,"download_count":0,"nonce":"████████████████","ok":true,"team_id":1814}
 ```
 
-Then call the same completion endpoint used by `FlagToken.gd`:
+Kemudian panggil titik akhir penyelesaian yang sama yang digunakan oleh `FlagToken.gd`:
 
 ```http
 POST /api/challenges/47/complete HTTP/1.1
@@ -44,14 +44,14 @@ Content-Type: application/json
 {}
 ```
 
-The server returned the marker:
+Server mengembalikan penanda:
 
 ```json
 {"challenge_id":47,"marker":"████████████████","team_id":1814}
 ```
 
-Submitting the marker to the challenge page returned `{"correct":true,"message":"Landed. Nicely done."}`.
+Mengirimkan penanda ke halaman tantangan akan menghasilkan `{"correct":true,"message":"Landed. Nicely done."}`.
 
-The intended game-side route is also clear from the scripts. `jump_velocity` is an exported property, so a debugger or a patched PCK can raise it enough to clear the final gap. Alternatively, setting the player's `global_position` to the goal's position makes the goal area fire `goal_reached`, which leads to the end screen and the same marker request. Either change is local to the client; the server does not verify the jump.
+Rute sisi permainan yang dimaksudkan juga jelas dari skripnya. `jump_velocity` adalah properti yang diekspor, sehingga debugger atau PCK yang di-patch dapat meningkatkannya cukup untuk menghilangkan kesenjangan terakhir. Alternatifnya, menyetel `global_position` pemain ke posisi gawang akan membuat area gawang menembakkan `goal_reached`, yang mengarah ke layar akhir dan permintaan penanda yang sama. Perubahan mana pun bersifat lokal bagi klien; server tidak memverifikasi lompatan.
 
-The accepted flag was ████████████████.
+Flag yang diterima adalah ████████████████.

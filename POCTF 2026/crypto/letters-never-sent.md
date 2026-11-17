@@ -2,46 +2,46 @@
 
 | | |
 |---|---|
-| **Section** | wave 1 |
-| **Category** | crypto |
-| **Solves** | 876 |
+| **Bagian** | wave 1 |
+| **Kategori** | crypto |
+| **Jumlah Solve** | 876 |
 
-## Overview
+## Ringkasanan
 
-The challenge gives us a letter and a message recovered with it:
+Tantangannya memberi kita sepucuk surat dan pesan yang diperoleh bersamanya:
 
 ```
 GMAHI{2.1814.TQPCOJ5THOKCT6HM.FWDJZEANBQV7AO57ATESOZZIYD}
 ```
 
-The letter is mostly atmosphere, but it contains exactly two useful facts. It is addressed to *Admiral Sir Francis Beaufort, Hydrographer to the Navy*, and the body praises "that reciprocal tableau which bears your name". That is the cipher, named after the same man: **Beaufort**. "Reciprocal" is the property that defines it — encryption and decryption are the same operation:
+Surat itu sebagian besar bersifat atmosferik, tetapi berisi dua fakta berguna. Hal ini ditujukan kepada *Laksamana Sir Francis Beaufort, Ahli Hidrograf Angkatan Laut*, dan badan tersebut memuji "tablo timbal balik yang menyandang nama Anda". Itu adalah sandinya, dinamai menurut nama orang yang sama: **Beaufort**. "Timbal balik" adalah properti yang mendefinisikannya — enkripsi dan dekripsi adalah operasi yang sama:
 
 ```
 P = (K - C) mod 26
 ```
 
-The other hint is the border of the letter. It is a frame of Victorian plant and object names — Rose, Violet, Snowdrop, Anchor, Tulip, Poppy, Carnation, Harp, Willow, Marigold, Dove, Oak, Narcissus, Fern, Lily — and a handful of them are marked with a small star. Reading those labels clockwise from the first one, the initials spell:
+Petunjuk lainnya adalah batas surat. Ini adalah bingkai nama tanaman dan objek bergaya Victoria — Mawar, Violet, Tetesan Salju, Jangkar, Tulip, Poppy, Anyelir, Harpa, Willow, Marigold, Merpati, Oak, Narcissus, Pakis, Lily — dan beberapa di antaranya ditandai dengan bintang kecil. Membaca label tersebut searah jarum jam dari yang pertama, inisialnya mengeja:
 
 ```
 V A C A N T
 ```
 
-Which is the key. Two things make the reading unambiguous: there are six starred labels and six letters, and the repeated `A` is matched by the two starred *Anchor* entries, one on the top edge and one on the bottom.
+Yang mana kuncinya. Ada dua hal yang membuat pembacaan menjadi jelas: ada enam label berbintang dan enam huruf, dan `A` yang diulang dicocokkan dengan dua entri *Anchor* yang berbintang, satu di tepi atas dan satu di bawah.
 
-The ciphertext itself confirms that digits and separators are left in the clear: the `2.1814.` block survives untouched.
+Ciphertext itu sendiri menegaskan bahwa angka dan pemisah dibiarkan kosong: blok `2.1814.` tetap tidak tersentuh.
 
-## Solve
+## Penyelesaian
 
-The key is checked against the prefix. With `VACANT` and the Beaufort relation:
+Kuncinya diperiksa terhadap awalan. Dengan `VACANT` dan relasi Beaufort:
 
 | Ciphertext | G | M | A | H | I |
 |---|---|---|---|---|---|
 | Key | V | A | C | A | N |
 | Plaintext | P | O | C | T | F |
 
-`K - C` gives `P O C T F` for the first five letters, which is the flag prefix and a confirmation that the key and the direction of the subtraction are both right. Using plain Vigenère (`C - K`) instead gives `LKNYZ`, so the letter is not just decoration: it picks the variant.
+`K - C` memberikan `P O C T F` untuk lima huruf pertama, yang merupakan awalan flag dan konfirmasi bahwa kunci dan arah pengurangan keduanya benar. Penggunaan Vigenère biasa (`C - K`) malah menghasilkan `LKNYZ`, jadi hurufnya bukan sekadar hiasan: ia memilih variannya.
 
-One alignment detail costs more time than the cipher itself. The key stream runs over the **whole** string, including the `GMAHI`/`POCTF` prefix, and only letters advance it — digits and punctuation are passed through without consuming a key character. After the five letters of `GMAHI` the key is already at its sixth letter, so the first character after the opening brace is aligned with `T`, not with `V`. Restarting the key at the brace produces garbage from the first byte.
+Satu detail penyelarasan memerlukan waktu lebih lama dibandingkan sandi itu sendiri. Aliran kunci dijalankan pada string **keseluruhan**, termasuk awalan `GMAHI`/`POCTF`, dan hanya huruf yang mendahuluinya — angka dan tanda baca diteruskan tanpa menggunakan karakter kunci. Setelah lima huruf `GMAHI` kuncinya sudah berada pada huruf keenam, jadi karakter pertama setelah kurung kurawal pembuka sejajar dengan `T`, bukan `V`. Memulai ulang kunci di kurung kurawal menghasilkan sampah dari byte pertama.
 
 ```python
 ct  = "GMAHI{2.1814.TQPCOJ5THOKCT6HM.FWDJZEANBQV7AO57ATESOZZIYD}"
@@ -59,10 +59,10 @@ for ch in ct:
 print("".join(out))
 ```
 
-Running the script prints the flag:
+Menjalankan skrip akan mencetak bendera:
 
 ```
 POCTF{2.1814.████████████████.██████████████████████████}
 ```
 
-The first word of the body, `AFLAME`, is a useful sanity check: a wrong key or a one-off alignment would never produce an English word at that position.
+Kata pertama dari isi, `AFLAME`, adalah pemeriksaan kewarasan yang berguna: kunci yang salah atau penyelarasan satu kali tidak akan pernah menghasilkan kata bahasa Inggris pada posisi tersebut.

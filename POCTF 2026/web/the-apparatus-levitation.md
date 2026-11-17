@@ -2,17 +2,17 @@
 
 | | |
 |---|---|
-| **Section** | wave 5 |
-| **Category** | web |
-| **Solves** | 168 |
+| **Bagian** | wave 5 |
+| **Kategori** | web |
+| **Jumlah Solve** | 168 |
 
-## Overview
+## Ikhtisar
 
-The LSSF parlour portal exchanges a team session token for a signed JWT that carries a role claim. Only the `SPIRIT` role may read the recovered marker from the transcript endpoint. The application verifies tokens with an RSA public key but also accepts HMAC-signed tokens, using that same public key material as the HMAC secret — an algorithm-confusion flaw that allows a forged `SPIRIT` token.
+Portal ruang tamu LSSF menukar token sesi tim dengan JWT bertanda tangan yang membawa klaim peran. Hanya peran `SPIRIT` yang dapat membaca penanda yang dipulihkan dari titik akhir transkrip. Aplikasi ini memverifikasi token dengan kunci publik RSA tetapi juga menerima token yang ditandatangani HMAC, menggunakan materi kunci publik yang sama dengan rahasia HMAC — sebuah kelemahan kebingungan algoritma yang memungkinkan token `SPIRIT` dipalsukan.
 
-## Solve
+## Penyelesaian
 
-The challenge page issued a short-lived team token. Posting it to the portal's session endpoint opened a `MEDIUM` session:
+Halaman tantangan mengeluarkan token tim berumur pendek. Mempostingnya ke titik akhir sesi portal membuka sesi `MEDIUM`:
 
 ```http
 POST /session HTTP/1.1
@@ -22,11 +22,11 @@ Content-Type: application/json
 {"token": "<team session token>"}
 ```
 
-The response set a `levitation_session` cookie containing an RS256 JWT with header `{"alg":"RS256","typ":"JWT","kid":"spirit-key-1"}` and a payload carrying `team_id`, a per-team nonce, and `"role":"medium"`.
+Responsnya menetapkan cookie `levitation_session` yang berisi RS256 JWT dengan header `{"alg":"RS256","typ":"JWT","kid":"spirit-key-1"}` dan muatan yang membawa `team_id`, nonce per tim, dan `"role":"medium"`.
 
-The portal advertised its verification material at `/.well-known/jwks.json`, and also exposed the same key as a raw PEM at `/spirit-key.pem`. That file contained a normal RSA public key. However, the verifier accepted an HS256 token whose HMAC secret was the exact contents of that public PEM file, including the trailing newline. With the header still naming `kid: spirit-key-1`, the algorithm confusion was accepted and the role claim was trusted.
+Portal mengiklankan materi verifikasinya di `/.well-known/jwks.json`, dan juga menampilkan kunci yang sama dengan PEM mentah di `/spirit-key.pem`. File itu berisi kunci publik RSA normal. Namun, pemverifikasi menerima token HS256 yang rahasia HMAC-nya merupakan konten persis dari file PEM publik tersebut, termasuk baris baru di belakangnya. Dengan header yang masih bernama `kid: spirit-key-1`, kebingungan algoritma diterima dan klaim peran dipercaya.
 
-I minted a replacement token with the same `team_id` and the same nonce claim as the issued session, but with `"role":"spirit"`, and signed it as HS256 using the raw PEM bytes as the key:
+Saya membuat token pengganti dengan `team_id` yang sama dan klaim nonce yang sama dengan sesi yang dikeluarkan, tetapi dengan `"role":"spirit"`, dan menandatanganinya sebagai HS256 menggunakan byte PEM mentah sebagai kuncinya:
 
 ```python
 header  = {"alg": "HS256", "typ": "JWT", "kid": "spirit-key-1"}
@@ -35,6 +35,6 @@ signing_input = b64url(json(header)) + "." + b64url(json(payload))
 token = signing_input + "." + b64url(hmac_sha256(pem_bytes, signing_input))
 ```
 
-Requesting `/api/transcript` with this forged cookie returned the `SPIRIT` transcript instead of the medium-only attendance text. The transcript ended with the recovered marker, which was submitted successfully.
+Meminta `/api/transcript` dengan cookie palsu ini akan mengembalikan transkrip `SPIRIT` dan bukan teks kehadiran medium saja. Transkrip diakhiri dengan penanda yang dipulihkan, yang berhasil dikirimkan.
 
-The submitted flag was POCTF{80.1814.████████████████.████████████████} and it was accepted.
+Flag yang dikirimkan adalah POCTF{80.1814.████████████████.████████████████} dan diterima.

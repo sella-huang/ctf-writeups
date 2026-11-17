@@ -2,19 +2,19 @@
 
 | | |
 |---|---|
-| **Section** | wave 2 |
-| **Category** | misc |
-| **Solves** | 373 |
+| **Bagian** | wave 2 |
+| **Kategori** | misc |
+| **Jumlah Solve** | 373 |
 
-## Overview
+## Ikhtisar
 
-The artifact is `signal.wav`: 9.0 seconds, 44.1 kHz, mono, 16-bit PCM. It carries sixteen constant tones buried in broadband noise, one per 500 ms slot. The sixteen tones are drawn from a 32-symbol alphabet spaced 50 Hz apart starting at 500 Hz (500, 550, …, 2050 Hz), which maps exactly onto the base32 alphabet `A–Z2–7`. The goal is the 16-character nonce.
+Artefaknya adalah `signal.wav`: 9,0 detik, 44,1 kHz, mono, PCM 16-bit. Ini membawa enam belas nada konstan yang terkubur dalam kebisingan broadband, satu nada per 500 ms. Enam belas nada diambil dari 32 simbol alfabet dengan jarak 50 Hz mulai dari 500 Hz (500, 550,…, 2050 Hz), yang dipetakan tepat ke alfabet base32 `A–Z2–7`. Tujuannya adalah nonce 16 karakter.
 
-## Solve
+## Penyelesaian
 
-Reading the WAV and computing a sliding spectral peak shows the signal is organized in 500 ms blocks. Sixteen blocks span 8 s; the file is 9 s long, so the message starts at 0.5 s and ends at 8.5 s, with 0.5 s of noise before and after. Windows that start on multiples of 0.5 s produce a single clean peak (magnitude ≈ 2.4·10⁷), while windows offset by 0.25 s straddle two symbols and give mixed spectra (≈ 1.2·10⁷), which fixes the slot boundaries at `[0.5 + 0.5k, 1.0 + 0.5k)`.
+Membaca WAV dan menghitung puncak spektral geser menunjukkan bahwa sinyal diatur dalam blok 500 ms. Enam belas blok rentang waktu 8 detik; file tersebut berdurasi 9 detik, jadi pesan dimulai pada 0,5 detik dan berakhir pada 8,5 detik, dengan noise 0,5 detik sebelum dan sesudahnya. Jendela yang dimulai pada kelipatan 0,5 detik menghasilkan satu puncak bersih (magnitudo ≈ 2,4·10⁷), sedangkan jendela diimbangi dengan 0,25 detik mengangkangi dua simbol dan memberikan spektrum campuran (≈ 1,2·10⁷), yang menetapkan batas slot pada `[0.5 + 0.5k, 1.0 + 0.5k)`.
 
-For each slot, measure the energy at all 32 candidate frequencies with the Goertzel algorithm (a 0.5 s coherent integration, i.e. a 2 Hz-resolution DFT):
+Untuk setiap slot, ukur energi di seluruh 32 kandidat frekuensi dengan algoritma Goertzel (integrasi koheren 0,5 detik, yaitu DFT resolusi 2 Hz):
 
 ```python
 for k in range(16):
@@ -23,6 +23,6 @@ for k in range(16):
     sym  = ALPHABET[max(range(32), key=lambda i: mags[i])]
 ```
 
-The winning tone in every slot beats the runner-up by a factor of at least ~21, so the decision is unambiguous. Indexing each detected tone through `ABCDEFGHIJKLMNOPQRSTUVWXYZ234567` yields the base32 nonce.
+Nada kemenangan di setiap slot mengalahkan runner-up dengan faktor setidaknya ~21, jadi keputusannya tidak ambigu. Mengindeks setiap nada yang terdeteksi melalui `ABCDEFGHIJKLMNOPQRSTUVWXYZ234567` menghasilkan nonce base32.
 
-The 16-character nonce is `████████████████`.
+Nonce 16 karakter adalah `████████████████`.

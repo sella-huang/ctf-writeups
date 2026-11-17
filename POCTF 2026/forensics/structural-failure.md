@@ -2,15 +2,15 @@
 
 | | |
 |---|---|
-| **Section** | wave 7 |
-| **Category** | forensics |
-| **Solves** | 136 |
+| **Bagian** | wave 7 |
+| **Kategori** | forensics |
+| **Jumlah Solve** | 136 |
 
-## Overview
+## Ikhtisar
 
-The artifact is a 2,568-byte ZIP named `meridian-correspondence.zip`. The central directory and the End-of-Central-Directory record have been overwritten with garbage; the three local file headers and their DEFLATE streams are still present. The archive is therefore readable in principle, but not by tools that begin at the EOCD. `file` misidentifies it as an OpenPGP secret key, and Python's `zipfile` raises `BadZipFile: File is not a zip file`.
+Artefaknya adalah ZIP 2.568 byte bernama `meridian-correspondence.zip`. Direktori pusat dan catatan Direktori Akhir Pusat telah ditimpa dengan sampah; tiga header file lokal dan aliran DEFLATE-nya masih ada. Oleh karena itu, arsip tersebut pada prinsipnya dapat dibaca, tetapi tidak dapat dibaca oleh alat yang dimulai di EOCD. `file` salah mengidentifikasinya sebagai kunci rahasia OpenPGP, dan `zipfile` Python memunculkan `BadZipFile: File is not a zip file`.
 
-There is one additional wrinkle. The first byte of each local-header signature is damaged. The expected signature is `50 4b 03 04` (`PK\x03\x04`), but the archive contains:
+Ada satu kerutan tambahan. Byte pertama dari setiap tanda tangan header lokal rusak. Tanda tangan yang diharapkan adalah `50 4b 03 04` (`PK\x03\x04`), tetapi arsipnya berisi:
 
 ```text
 00000000: 94 4b 03 04 ...
@@ -18,20 +18,20 @@ There is one additional wrinkle. The first byte of each local-header signature i
 00000451: 24 4b 03 04 ...
 ```
 
-The `4b 03 04` tail survives in all three headers, so the headers can still be located by scanning for those three bytes and stepping back one byte. The rest of each local header — compression method, CRC, compressed size, uncompressed size, filename length, and filename — is intact. That is enough to decompress the entries without rebuilding the central directory.
+Ekor `4b 03 04` bertahan di ketiga header, sehingga header masih dapat ditemukan dengan memindai ketiga byte tersebut dan mundur satu byte. Sisa dari setiap header lokal — metode kompresi, CRC, ukuran terkompresi, ukuran tidak terkompresi, panjang nama file, dan nama file — masih utuh. Itu cukup untuk mendekompresi entri tanpa membangun kembali direktori pusat.
 
-## Solve
+## Penyelesaian
 
-Start by confirming the damage:
+Mulailah dengan mengonfirmasi kerusakan:
 
 ```bash
 file meridian-correspondence.zip
 python3 -c 'import zipfile; zipfile.ZipFile("meridian-correspondence.zip")'
 ```
 
-The first command prints `OpenPGP Secret Key Version 3`; the second prints `BadZipFile: File is not a zip file`. A search for `PK` or `PK\x03\x04` finds nothing. A search for the surviving `4b 03 04` finds exactly three occurrences, at offsets `1`, `682`, and `1106`; subtracting one gives the three local-header starts: `0`, `681`, and `1105`.
+Perintah pertama mencetak `OpenPGP Secret Key Version 3`; cetakan kedua `BadZipFile: File is not a zip file`. Pencarian untuk `PK` atau `PK\x03\x04` tidak menemukan apa pun. Pencarian untuk `4b 03 04` yang masih ada menemukan tepat tiga kejadian, pada offset `1`, `682`, dan `1106`; mengurangi satu menghasilkan tiga header lokal dimulai: `0`, `681`, dan `1105`.
 
-The local header format is:
+Format tajuk lokal adalah:
 
 ```text
 signature            4 bytes
@@ -50,7 +50,7 @@ extra field          variable
 compressed data      variable
 ```
 
-Parsing the three headers gives:
+Mengurai tiga header menghasilkan:
 
 | entry | header offset | data offset | compressed | uncompressed | CRC-32 |
 |---|---|---:|---:|---:|---|
@@ -58,9 +58,9 @@ Parsing the three headers gives:
 | `02_steward_response.txt` | `681` | `734` | 371 | 663 | `2494a223` |
 | `03_marchetti_annotations.md` | `1105` | `1162` | 1119 | 2121 | `64ef8dae` |
 
-All three entries use method `8` (DEFLATE) with flags `0`, so the compressed sizes are in the local headers and there are no data descriptors. The last entry's data ends at offset `2281`; the remaining `287` bytes are the overwritten central directory and EOCD. There is no `PK\x01\x02` or `PK\x05\x06` in that tail, which is why standard tools refuse the file.
+Ketiga entri menggunakan metode `8` (DEFLATE) dengan flag `0`, sehingga ukuran terkompresi ada di header lokal dan tidak ada deskriptor data. Data entri terakhir berakhir pada offset `2281`; byte `287` yang tersisa adalah direktori pusat dan EOCD yang ditimpa. Tidak ada `PK\x01\x02` atau `PK\x05\x06` di bagian ekor itu, itulah sebabnya alat standar menolak file tersebut.
 
-A minimal recovery script finds the headers, decompresses the raw DEFLATE streams, and checks every CRC:
+Skrip pemulihan minimal menemukan header, mendekompresi aliran DEFLATE mentah, dan memeriksa setiap CRC:
 
 ```python
 import struct, zlib
@@ -82,7 +82,7 @@ for start in starts:
     print(f"{name}: {len(out)} bytes, CRC {crc:08x} OK")
 ```
 
-The output is:
+Outputnya adalah:
 
 ```text
 01_halberd_correspondence.txt: 1128 bytes, CRC f63692eb OK
@@ -90,24 +90,22 @@ The output is:
 03_marchetti_annotations.md: 2121 bytes, CRC 64ef8dae OK
 ```
 
-The CRC check is the important part: the local headers contain the expected CRC-32 for each entry, and each decompressed stream matches. The recovery is not a guess.
-
-The three recovered files tell the Meridian Circle story. `01_halberd_correspondence.txt` is Marion Halberd's request to the Circle's Steward: the Frame IV apparatus is still responding, she has documented seven completed sessions, and she wants the Circle's blessing to formalize the operation before "the subject for the coming session" is used. `02_steward_response.txt` is C. Whitmore's denial: the compact does not bend, the request is refused, and no archival copy of the response will be retained. `03_marchetti_annotations.md` is Elena's annotation set. Its first line contains the docket reference:
+Pemeriksaan CRC adalah bagian yang penting: header lokal berisi CRC-32 yang diharapkan untuk setiap entri, dan setiap aliran yang didekompresi cocok. Pemulihannya bukanlah sebuah dugaan.Tiga file yang dipulihkan menceritakan kisah Lingkaran Meridian. `01_halberd_correspondence.txt` adalah permintaan Marion Halberd kepada Pengurus Circle: peralatan Frame IV masih merespons, dia telah mendokumentasikan tujuh sesi yang telah selesai, dan dia ingin restu Circle untuk meresmikan operasi sebelum "subjek untuk sesi mendatang" digunakan. `02_steward_response.txt` adalah penolakan C. Whitmore: perjanjian tidak dapat diubah, permintaan ditolak, dan salinan arsip tanggapan tidak akan disimpan. `03_marchetti_annotations.md` adalah kumpulan anotasi Elena. Baris pertamanya berisi referensi map:
 
 ```text
 # MARCHETTI 2026-14 docket ref: ████████████████
 ```
 
-The annotations also record the provenance chain — Halberd to Steward on 06/09, Steward to Halberd on 06/11, Delacroix to Marchetti on 06/22, Marchetti to self on 06/28 — and Elena's instruction that the docket should reach her sister first, her advisor second, and not the Society, the university legal office, or Halberd.
+Anotasi tersebut juga mencatat rantai asal — Halberd ke Steward pada 09/06, Steward ke Halberd pada 11/06, Delacroix ke Marchetti pada 22/06, Marchetti ke dirinya sendiri pada 28/06 — dan instruksi Elena bahwa berkas perkara harus sampai ke saudara perempuannya terlebih dahulu, penasihatnya yang kedua, dan bukan Society, kantor hukum universitas, atau Halberd.
 
-The dead ends are useful. `file` guesses OpenPGP because the first byte of the first signature is `0x94` rather than `0x50`; the archive is still a ZIP. `zipfile` and other EOCD-based tools stop before reading the local headers, so they cannot list the archive even though the entries are intact. Rebuilding the central directory is unnecessary: the local headers contain the name, method, sizes, and CRC for every entry. The README's claim that the file was last seen as 240 KB is narrative; the actual artifact is 2,568 bytes, and the three local entries account for all of it except the 287-byte garbage tail. The raw DEFLATE streams must be decompressed with a negative window size (`zlib.decompress(data, -15)`); a normal `zlib.decompress(data)` expects a zlib header and fails because the streams are raw DEFLATE.
+Jalan buntu itu berguna. `file` menebak OpenPGP karena byte pertama dari tanda tangan pertama adalah `0x94` dan bukan `0x50`; arsipnya masih berupa ZIP. `zipfile` dan alat berbasis EOCD lainnya berhenti sebelum membaca header lokal, sehingga tidak dapat mencantumkan arsip meskipun entri masih utuh. Membangun kembali direktori pusat tidak diperlukan: header lokal berisi nama, metode, ukuran, dan CRC untuk setiap entri. Klaim README bahwa file terakhir dilihat berukuran 240 KB adalah narasi; artefak sebenarnya adalah 2.568 byte, dan tiga entri lokal mencakup semuanya kecuali ekor sampah 287 byte. Aliran DEFLATE mentah harus didekompresi dengan ukuran jendela negatif (`zlib.decompress(data, -15)`); `zlib.decompress(data)` normal mengharapkan header zlib dan gagal karena alirannya DEFLATE mentah.
 
-On the artifact page, submitting the raw token or `POCTF{████████████████}` returns:
+Di halaman artefak, mengirimkan token mentah atau `POCTF{████████████████}` akan mengembalikan:
 
 ```json
 {"correct":true,"message":"Correct."}
 ```
 
-The token is the 16-character docket reference from Elena's annotations, and the full marker is `POCTF{████…}`.
+Tokennya adalah referensi map 16 karakter dari anotasi Elena, dan penanda lengkapnya adalah `POCTF{████…}`.
 
-The docket reference in Elena's annotations is `████████████████`, and the flag is `POCTF{████…}`.
+Referensi map dalam anotasi Elena adalah `████████████████`, dan flag-nya adalah `POCTF{████…}`.

@@ -2,21 +2,21 @@
 
 | | |
 |---|---|
-| **Section** | wave 4 |
-| **Category** | game hacking |
-| **Solves** | 206 |
+| **Bagian** | wave 4 |
+| **Kategori** | game hacking |
+| **Jumlah Solve** | 206 |
 
-## Overview
+## Ikhtisar
 
-The download is a Godot 4.7.1 x86-64 export. The game logic is stored in the embedded PCK at file offset `0x4611138`, which contains 398 files. The relevant scripts are `scenes/auth_check.gdc`, `scenes/game/game_controller.gdc`, `scenes/game/room03.gdc`, `scenes/actors/player.gdc`, `scenes/actors/enemy_basic.gdc`, `FlagToken.gdc`, and `Ticker.gdc`.
+Unduhannya adalah ekspor Godot 4.7.1 x86-64. Logika permainan disimpan di PCK tertanam pada file offset `0x4611138`, yang berisi 398 file. Skrip yang relevan adalah `scenes/auth_check.gdc`, `scenes/game/game_controller.gdc`, `scenes/game/room03.gdc`, `scenes/actors/player.gdc`, `scenes/actors/enemy_basic.gdc`, `FlagToken.gdc`, dan `Ticker.gdc`.
 
-The game authenticates with `game.token` and `team.key`, calls `GET /api/challenges/48/instance` to obtain a nonce, and then starts a 2.5-second HMAC ticker. The final room spawns a boss with `max_hp=3000` and `attack_damage=999`, while the player has `max_hp=100`, so ordinary play cannot win. When the boss dies, `room03` emits `room_cleared`; `game_controller._finalize_run()` calls `FlagService.request_marker()`, which POSTs to `/api/challenges/48/complete` with the auth headers and nonce. The returned `marker` is displayed by the flag overlay.
+Game mengautentikasi dengan `game.token` dan `team.key`, memanggil `GET /api/challenges/48/instance` untuk mendapatkan nonce, lalu memulai ticker HMAC 2,5 detik. Ruang terakhir memunculkan bos dengan `max_hp=3000` dan `attack_damage=999`, sedangkan pemain memiliki `max_hp=100`, jadi permainan biasa tidak bisa menang. Saat bos mati, `room03` mengeluarkan `room_cleared`; `game_controller._finalize_run()` memanggil `FlagService.request_marker()`, yang POST ke `/api/challenges/48/complete` dengan header autentikasi dan nonce. `marker` yang dikembalikan ditampilkan oleh overlay bendera.
 
-The important observation is that the completion endpoint receives no proof of a win. It only validates the team credentials and the instance nonce. The ticker is not required for completion, and the server has no knowledge of the boss HP, the room state, or whether the client was ever launched. The "social construct" is the client-side win check itself: skip it and ask the server for the marker.
+Pengamatan penting adalah bahwa titik akhir penyelesaian tidak menerima bukti kemenangan. Ini hanya memvalidasi kredensial tim dan nonce instans. Ticker tidak diperlukan untuk penyelesaian, dan server tidak mengetahui HP bos, status ruangan, atau apakah klien pernah diluncurkan. "Konstruk sosial" adalah pemeriksaan kemenangan sisi klien itu sendiri: lewati saja dan minta penandanya pada server.
 
-## Solve
+## Penyelesaian
 
-Extract the credentials from `credentials.zip` and request an instance nonce:
+Ekstrak kredensial dari `credentials.zip` dan minta instance nonce:
 
 ```http
 GET /api/challenges/48/instance HTTP/1.1
@@ -25,13 +25,13 @@ X-POCTF-GAME-TOKEN: ████████████████
 X-POCTF-TEAM-KEY: ████████████████
 ```
 
-The response contains the nonce used by the game:
+Responsnya berisi nonce yang digunakan oleh game:
 
 ```json
 {"challenge_id":48,"download_count":0,"nonce":"████████████████","ok":true,"team_id":1814}
 ```
 
-Then call the same completion endpoint that `FlagToken.gd` uses, without ever starting the game:
+Kemudian panggil titik akhir penyelesaian yang sama yang digunakan `FlagToken.gd`, tanpa harus memulai permainan:
 
 ```http
 POST /api/challenges/48/complete HTTP/1.1
@@ -44,14 +44,14 @@ Content-Type: application/json
 {}
 ```
 
-The server returned a marker:
+Server mengembalikan penanda:
 
 ```json
 {"challenge_id":48,"marker":"████████████████","team_id":1814}
 ```
 
-Submitting that marker to the challenge page returned `{"correct":true,"message":"Landed. Nicely done."}`.
+Mengirimkan penanda itu ke halaman tantangan akan menghasilkan `{"correct":true,"message":"Landed. Nicely done."}`.
 
-The intended client-side route is also visible in the scripts. `room03.boss_max_hp` and `boss_attack_damage` are exported variables, and `enemy_basic.apply_damage()` trusts its argument. A debugger or a patched PCK can set the boss HP to 1, raise the player HP, or invoke `apply_damage(999999)` on the boss. That would make `room03` emit `room_cleared`, reach `_finalize_run()`, and mint the same marker through the normal overlay. But the endpoint is the weaker link: because `complete` does not verify that any of that happened, the game can be skipped entirely.
+Rute sisi klien yang dimaksud juga terlihat di skrip. `room03.boss_max_hp` dan `boss_attack_damage` adalah variabel yang diekspor, dan `enemy_basic.apply_damage()` memercayai argumennya. Debugger atau PCK yang dipatch dapat menyetel HP bos ke 1, menaikkan HP pemain, atau memanggil `apply_damage(999999)` pada bos. Itu akan membuat `room03` memancarkan `room_cleared`, mencapai `_finalize_run()`, dan mencetak penanda yang sama melalui hamparan normal. Namun titik akhir adalah tautan yang lebih lemah: karena `complete` tidak memverifikasi bahwa semua itu terjadi, permainan dapat dilewati seluruhnya.
 
-The accepted flag was ████████████████.
+Flag yang diterima adalah ████████████████.

